@@ -1,4 +1,14 @@
 import { Service, User, Order, Promo } from '@/types';
+import gutterCleaningImg from '@/assets/gutter-cleaning.jpg';
+import roofInspectionImg from '@/assets/roof-inspection.jpg';
+import roofRepairImg from '@/assets/roof-repair.jpg';
+import emergencyTarpImg from '@/assets/emergency-tarp.jpg';
+import skylightResealImg from '@/assets/skylight-reseal.jpg';
+import gutterGuardsImg from '@/assets/gutter-guards.jpg';
+import roofTuneupImg from '@/assets/roof-tuneup.jpg';
+import chimneyFlashingImg from '@/assets/chimney-flashing.jpg';
+import ventilationImg from '@/assets/ventilation.jpg';
+import downspoutExtensionImg from '@/assets/downspout-extension.jpg';
 
 export const demoServices: Service[] = [
   {
@@ -7,7 +17,7 @@ export const demoServices: Service[] = [
     category: 'gutters',
     title: 'Gutter Cleaning',
     description: 'Complete gutter cleaning with debris removal and downspout flushing. Protect your home from water damage.',
-    heroImage: '/api/placeholder/800/400',
+    heroImage: gutterCleaningImg,
     basePrice: 150,
     unit: 'linear_ft',
     durationMin: 120,
@@ -24,7 +34,7 @@ export const demoServices: Service[] = [
     category: 'roofing',
     title: 'Roof Inspection',
     description: 'Comprehensive roof inspection with detailed report. Identify issues before they become costly repairs.',
-    heroImage: '/api/placeholder/800/400',
+    heroImage: roofInspectionImg,
     basePrice: 200,
     unit: 'fixed',
     durationMin: 90,
@@ -41,7 +51,7 @@ export const demoServices: Service[] = [
     category: 'roofing',
     title: 'Small Roof Repair',
     description: 'Fix minor leaks, replace damaged shingles, and seal problem areas. Quick turnaround for urgent repairs.',
-    heroImage: '/api/placeholder/800/400',
+    heroImage: roofRepairImg,
     basePrice: 350,
     unit: 'sqft',
     durationMin: 180,
@@ -57,7 +67,7 @@ export const demoServices: Service[] = [
     category: 'storm',
     title: 'Emergency Roof Tarp',
     description: '24/7 emergency service to protect your home from storm damage. Fast response guaranteed.',
-    heroImage: '/api/placeholder/800/400',
+    heroImage: emergencyTarpImg,
     basePrice: 400,
     unit: 'fixed',
     durationMin: 120,
@@ -73,7 +83,7 @@ export const demoServices: Service[] = [
     category: 'maintenance',
     title: 'Skylight Resealing',
     description: 'Stop leaks around skylights with professional resealing. Prevent water damage and improve energy efficiency.',
-    heroImage: '/api/placeholder/800/400',
+    heroImage: skylightResealImg,
     basePrice: 275,
     unit: 'fixed',
     durationMin: 150,
@@ -87,7 +97,7 @@ export const demoServices: Service[] = [
     category: 'gutters',
     title: 'Gutter Guard Installation',
     description: 'Premium gutter protection system. Reduce maintenance and extend gutter life.',
-    heroImage: '/api/placeholder/800/400',
+    heroImage: gutterGuardsImg,
     basePrice: 12,
     unit: 'linear_ft',
     durationMin: 240,
@@ -103,7 +113,7 @@ export const demoServices: Service[] = [
     category: 'maintenance',
     title: 'Roof Tune-Up',
     description: 'Annual maintenance package. Keep your roof in top condition and catch issues early.',
-    heroImage: '/api/placeholder/800/400',
+    heroImage: roofTuneupImg,
     basePrice: 225,
     unit: 'fixed',
     durationMin: 120,
@@ -117,7 +127,7 @@ export const demoServices: Service[] = [
     category: 'roofing',
     title: 'Chimney Flashing Repair',
     description: 'Fix or replace chimney flashing to prevent leaks. Common source of water damage.',
-    heroImage: '/api/placeholder/800/400',
+    heroImage: chimneyFlashingImg,
     basePrice: 425,
     unit: 'fixed',
     durationMin: 180,
@@ -131,7 +141,7 @@ export const demoServices: Service[] = [
     category: 'maintenance',
     title: 'Roof Ventilation Upgrade',
     description: 'Improve attic ventilation for better energy efficiency and roof longevity.',
-    heroImage: '/api/placeholder/800/400',
+    heroImage: ventilationImg,
     basePrice: 550,
     unit: 'fixed',
     durationMin: 240,
@@ -147,7 +157,7 @@ export const demoServices: Service[] = [
     category: 'gutters',
     title: 'Downspout Extensions',
     description: 'Direct water away from foundation. Prevent basement flooding and foundation damage.',
-    heroImage: '/api/placeholder/800/400',
+    heroImage: downspoutExtensionImg,
     basePrice: 85,
     unit: 'linear_ft',
     durationMin: 90,
