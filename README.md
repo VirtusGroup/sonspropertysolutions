@@ -1,73 +1,114 @@
-# Welcome to your Lovable project
+# Sons Property Solutions - Mobile App Prototype
 
-## Project info
+A polished mobile-first PWA for booking roofing and property services in the Dallas-Fort Worth area.
 
-**URL**: https://lovable.dev/projects/4ef7f241-2d0e-4281-9d20-984f65d58614
+## Overview
 
-## How can I edit this code?
+This is a **prototype application** demonstrating a consumer marketplace-style app for Sons Property Solutions (Sons Roofing). It features a complete booking flow, order tracking, and user profile management - all without requiring backend infrastructure.
 
-There are several ways of editing your application.
+### ⚠️ Prototype Limitations
 
-**Use Lovable**
+- **No real backend**: All data stored in localStorage
+- **No payment processing**: Payment UI is placeholder-only
+- **No external integrations**: No Aculinks, QuickBooks, or live APIs
+- **Demo authentication**: Sign-in is simulated for testing flows
+- **Static estimates**: Pricing uses client-side formulas only
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/4ef7f241-2d0e-4281-9d20-984f65d58614) and start prompting.
+## Features
 
-Changes made via Lovable will be committed automatically to this repo.
+### ✅ Complete User Flows
+- **Service Catalog**: Browse 10+ services with filtering and search
+- **Smart Estimator**: Get instant price estimates based on property details
+- **5-Step Booking**: Service → Address → Photos → Schedule → Review
+- **Order Tracking**: View status timeline from Received → Completed
+- **User Profiles**: Manage addresses, notifications, referral codes
+- **PWA Support**: Install to home screen on iOS/Android
 
-**Use your preferred IDE**
+### 🎨 Design System
+- Professional navy primary (#2B4056) + warm amber accent
+- Mobile-first responsive layouts
+- Smooth transitions and animations
+- Bottom tab navigation for easy thumb access
+- Semantic color tokens (no hardcoded colors)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 🛠️ Dev Features
+- **Dev Menu** (kebab menu in header):
+  - Reset demo data
+  - Impersonate users (Guest, Regular, VIP)
+  - Advance order status
+  - Toggle promotions
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Local Development
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Tech Stack
 
-**Use GitHub Codespaces**
+- **Framework**: React 18 + TypeScript + Vite
+- **UI**: Tailwind CSS + shadcn/ui
+- **State**: Zustand with localStorage persistence
+- **Forms**: react-hook-form + zod validation
+- **Animations**: Framer Motion
+- **Icons**: Lucide React
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Routes
 
-## What technologies are used for this project?
+- `/` - Home with hero, promos, popular services
+- `/services` - Service catalog with filters
+- `/services/:slug` - Service detail with estimator
+- `/book` - Multi-step booking wizard
+- `/orders` - Order list
+- `/orders/:id` - Order detail with timeline
+- `/account` - User profile and settings
+- `/support` - Contact options and FAQs
+- `/install` - PWA installation guide
 
-This project is built with:
+## Demo Data
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+The app includes seeded data:
+- 10 services across 4 categories
+- 3 user personas (Guest, Returning Customer, VIP)
+- 4 sample orders at various stages
+- 3 active promotions
 
-## How can I deploy this project?
+## Packaging for Despia (Native Apps)
 
-Simply open [Lovable](https://lovable.dev/projects/4ef7f241-2d0e-4281-9d20-984f65d58614) and click on Share -> Publish.
+### Key Considerations
+1. **Safe Areas**: CSS already includes `safe-area-inset-*` support
+2. **No SSR**: All rendering is client-side
+3. **Deep Links**: Routes support direct navigation (`/orders/:id`, etc.)
+4. **Status Bar**: Theme color set to brand navy (#2B4056)
+5. **Viewport**: Prevents zoom on inputs with proper font sizing
 
-## Can I connect a custom domain to my Lovable project?
+### Testing Checklist
+- [ ] Bottom tabs accessible on all devices
+- [ ] Photo upload works with camera on mobile
+- [ ] Forms don't trigger zoom on iOS
+- [ ] Safe areas respected (notches, home indicators)
+- [ ] Status bar color matches brand
 
-Yes, you can!
+## Known Limitations
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. **Photos**: Stored as base64 in localStorage (no real upload)
+2. **Payments**: All payment UI disabled with tooltips
+3. **Push Notifications**: Toggle present but non-functional
+4. **Real-time Updates**: No live order status changes
+5. **Backend Validation**: All validation is client-side only
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Future Enhancements (Not in Prototype)
+
+- Real backend with Supabase/Firebase
+- Stripe payment integration
+- SMS notifications via Twilio
+- Google Maps for service area
+- Live chat support
+- In-app reviews and ratings
+
+## License
+
+Prototype for demonstration purposes.

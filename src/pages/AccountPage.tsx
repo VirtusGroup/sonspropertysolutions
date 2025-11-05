@@ -1,0 +1,359 @@
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import {
+  User,
+  MapPin,
+  CreditCard,
+  Gift,
+  Bell,
+  LogOut,
+  Plus,
+  Trash2,
+  Edit,
+} from 'lucide-react';
+import { useStore } from '@/store/useStore';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Address } from '@/types';
+import { toast } from 'sonner';
+
+export default function AccountPage() {
+  const { currentUser, updateUser, addAddress, deleteAddress } = useStore();
+  const navigate = useNavigate();
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [addingAddress, setAddingAddress] = useState(false);
+  const [name, setName] = useState(currentUser?.name || '');
+  const [phone, setPhone] = useState(currentUser?.phone || '');
+
+  const handleSaveProfile = () => {
+    updateUser({ name, phone });
+    setEditingProfile(false);
+    toast.success('Profile updated');
+  };
+
+  const handleAddAddress = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const newAddress: Address = {
+      id: `addr-${Date.now()}`,
+      label: formData.get('label') as string,
+      street: formData.get('street') as string,
+      unit: formData.get('unit') as string,
+      city: formData.get('city') as string,
+      state: formData.get('state') as string,
+      zip: formData.get('zip') as string,
+      isDefault: currentUser?.addresses.length === 0,
+    };
+    addAddress(newAddress);
+    setAddingAddress(false);
+    toast.success('Address added');
+  };
+
+  const handleSignOut = () => {
+    // In a real app, this would clear auth
+    toast.success('Signed out (demo only)');
+  };
+
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md mx-4">
+          <CardHeader>
+            <CardTitle>Sign In Required</CardTitle>
+            <CardDescription>Please sign in to view your account</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link to="/auth/login">Sign In</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen pb-6">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-4 py-8">
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          <div className="h-16 w-16 rounded-full bg-primary-foreground/20 flex items-center justify-center text-2xl font-bold">
+            {currentUser.name.split(' ').map(n => n[0]).join('')}
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold">{currentUser.name}</h1>
+            <p className="opacity-90">{currentUser.email}</p>
+            <Badge variant="secondary" className="mt-1">
+              {currentUser.tier.toUpperCase()}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 px-4 pt-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Profile */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  <CardTitle>Profile</CardTitle>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditingProfile(!editingProfile)}
+                >
+                  {editingProfile ? 'Cancel' : 'Edit'}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {editingProfile ? (
+                <>
+                  <div className="space-y-2">
+                    <Label>Name</Label>
+                    <Input value={name} onChange={(e) => setName(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Phone</Label>
+                    <Input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input value={currentUser.email} disabled />
+                  </div>
+                  <Button onClick={handleSaveProfile} className="w-full">
+                    Save Changes
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Phone</p>
+                    <p>{currentUser.phone || 'Not set'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Email</p>
+                    <p>{currentUser.email}</p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Addresses */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  <CardTitle>Saved Addresses</CardTitle>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAddingAddress(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {currentUser.addresses.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No saved addresses</p>
+              ) : (
+                currentUser.addresses.map((addr) => (
+                  <div key={addr.id} className="flex items-start justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium">{addr.label}</p>
+                        {addr.isDefault && (
+                          <Badge variant="secondary" className="text-xs">Default</Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {addr.street}
+                        {addr.unit && `, ${addr.unit}`}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {addr.city}, {addr.state} {addr.zip}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        deleteAddress(addr.id);
+                        toast.success('Address deleted');
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Notifications */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                <CardTitle>Notifications</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">In-app notifications</p>
+                  <p className="text-sm text-muted-foreground">
+                    Receive updates about your orders
+                  </p>
+                </div>
+                <Switch defaultChecked />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Push notifications</p>
+                  <p className="text-sm text-muted-foreground">
+                    Demo only - not available yet
+                  </p>
+                </div>
+                <Switch disabled />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                <CardTitle>Payment Methods</CardTitle>
+              </div>
+              <CardDescription>
+                Payment at time of service (demo app)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" disabled className="w-full">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Payment Method (Demo)
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Referrals */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Gift className="h-5 w-5" />
+                <CardTitle>Referrals & Credits</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-accent/10 rounded-lg text-center">
+                <p className="text-3xl font-bold text-accent">${currentUser.credits}</p>
+                <p className="text-sm text-muted-foreground">Available Credits</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Your Referral Code</Label>
+                <div className="flex gap-2">
+                  <Input value={currentUser.referralCode} readOnly />
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(currentUser.referralCode);
+                      toast.success('Code copied!');
+                    }}
+                  >
+                    Copy
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Share with friends to earn $25 credit per referral
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sign Out */}
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out (Demo)
+          </Button>
+        </div>
+      </div>
+
+      {/* Add Address Dialog */}
+      <Dialog open={addingAddress} onOpenChange={setAddingAddress}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Address</DialogTitle>
+            <DialogDescription>Add a new service address</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAddAddress} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="label">Label</Label>
+              <Input id="label" name="label" placeholder="Home" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="street">Street Address</Label>
+              <Input id="street" name="street" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="unit">Unit / Apt (optional)</Label>
+              <Input id="unit" name="unit" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input id="city" name="city" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">State</Label>
+                <Input id="state" name="state" defaultValue="TX" required />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="zip">ZIP Code</Label>
+              <Input id="zip" name="zip" required />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setAddingAddress(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Add Address</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
