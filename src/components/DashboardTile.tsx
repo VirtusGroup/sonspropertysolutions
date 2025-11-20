@@ -48,7 +48,7 @@ export function DashboardTile({
   );
 
   const className = cn(
-    "flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 aspect-square",
+    "flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 aspect-square w-full",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
     disabled && "opacity-50 cursor-not-allowed",
     !disabled && "active:scale-95 hover:scale-105",

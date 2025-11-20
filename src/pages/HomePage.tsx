@@ -66,7 +66,7 @@ export default function HomePage() {
 
         {/* Dashboard Grid */}
         <main className="flex-1 p-3">
-          <div className="grid grid-cols-4 gap-2 mb-3">
+          <div className="grid grid-cols-4 gap-2 mb-3 auto-rows-fr">
           {/* Primary Actions - Accent colored */}
           <DashboardTile
             icon={CalendarDays}
