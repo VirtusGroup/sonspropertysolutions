@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, Service, Order, Address, Promo } from '@/types';
-import { demoServices, demoUsers, demoOrders, demoPromos } from '@/lib/demoData';
+import { User, Service, Order, Address, Promo, Notification } from '@/types';
+import { demoServices, demoUsers, demoOrders, demoPromos, demoNotifications } from '@/lib/demoData';
 
 interface AppState {
   // User
@@ -25,6 +25,11 @@ interface AppState {
   // Promos
   promos: Promo[];
   togglePromos: () => void;
+  
+  // Notifications
+  notifications: Notification[];
+  markNotificationRead: (notificationId: string) => void;
+  unreadNotificationsCount: number;
   
   // Dev helpers
   resetDemoData: () => void;
@@ -142,12 +147,25 @@ export const useStore = create<AppState>()(
           promos: state.promos.map((p) => ({ ...p, active: !p.active })),
         })),
       
+      notifications: demoNotifications,
+      
+      markNotificationRead: (notificationId) =>
+        set((state) => ({
+          notifications: state.notifications.map((n) =>
+            n.id === notificationId ? { ...n, read: true } : n
+          ),
+        })),
+      
+      unreadNotificationsCount: demoNotifications.filter((n) => !n.read).length,
+      
       resetDemoData: () =>
         set({
           currentUser: getInitialUser(),
           services: demoServices,
           orders: demoOrders,
           promos: demoPromos,
+          notifications: demoNotifications,
+          unreadNotificationsCount: demoNotifications.filter((n) => !n.read).length,
         }),
       
       impersonateUser: (userId) => {
@@ -191,6 +209,7 @@ export const useStore = create<AppState>()(
         currentUser: state.currentUser,
         orders: state.orders,
         promos: state.promos,
+        notifications: state.notifications,
       }),
     }
   )

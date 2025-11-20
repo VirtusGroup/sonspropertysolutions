@@ -81,6 +81,16 @@ export interface Promo {
   active: boolean;
 }
 
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  orderId?: string;
+  type: 'order' | 'promo' | 'system';
+}
+
 export interface EstimateInput {
   service: Service;
   quantity?: number;

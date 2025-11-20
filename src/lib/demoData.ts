@@ -1,4 +1,4 @@
-import { Service, User, Order, Promo } from '@/types';
+import { Service, User, Order, Promo, Notification } from '@/types';
 import gutterCleaningImg from '@/assets/gutter-cleaning.jpg';
 import roofInspectionImg from '@/assets/roof-inspection.jpg';
 import roofRepairImg from '@/assets/roof-repair.jpg';
@@ -320,5 +320,43 @@ export const demoPromos: Promo[] = [
     description: '$25 credit for each referral',
     discount: 25,
     active: true,
+  },
+];
+
+export const demoNotifications: Notification[] = [
+  {
+    id: 'notif-1',
+    title: 'Service Scheduled',
+    message: 'Your roof tune-up is scheduled for November 8 at 9:00 AM',
+    timestamp: '2024-11-01T14:25:00Z',
+    read: false,
+    orderId: 'ord-2',
+    type: 'order',
+  },
+  {
+    id: 'notif-2',
+    title: 'Technician En Route',
+    message: 'John is on his way! ETA: 15 minutes',
+    timestamp: '2024-11-05T12:45:00Z',
+    read: false,
+    orderId: 'ord-3',
+    type: 'order',
+  },
+  {
+    id: 'notif-3',
+    title: 'Fall Special Available',
+    message: 'Save 15% on gutter services with code FALL2024',
+    timestamp: '2024-11-01T08:00:00Z',
+    read: true,
+    type: 'promo',
+  },
+  {
+    id: 'notif-4',
+    title: 'Service Completed',
+    message: 'Your gutter cleaning is complete. Please leave us a review!',
+    timestamp: '2024-10-20T10:50:00Z',
+    read: true,
+    orderId: 'ord-1',
+    type: 'order',
   },
 ];
