@@ -43,10 +43,12 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-background relative">
       {/* Background Image */}
       <div 
-        className="fixed inset-0 z-0 bg-cover bg-center"
+        className="fixed inset-0 z-0"
         style={{ 
           backgroundImage: `url(${roofingBg})`,
-          opacity: 0.08
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.15
         }}
       />
       
