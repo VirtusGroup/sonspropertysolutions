@@ -26,20 +26,20 @@ export function DashboardTile({
     <>
       <div className="relative">
         <Icon className={cn(
-          "h-12 w-12 mb-2",
+          "h-8 w-8 mb-1.5",
           variant === 'primary' ? "text-accent-foreground" : "text-primary"
         )} />
         {badge !== undefined && badge > 0 && (
           <Badge 
             variant="secondary" 
-            className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-accent text-accent-foreground"
+            className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-accent text-accent-foreground"
           >
             {badge > 9 ? '9+' : badge}
           </Badge>
         )}
       </div>
       <span className={cn(
-        "text-xs font-medium text-center line-clamp-2 leading-tight",
+        "text-[10px] font-medium text-center line-clamp-2 leading-tight",
         variant === 'primary' ? "text-accent-foreground" : "text-foreground"
       )}>
         {label}
@@ -48,13 +48,13 @@ export function DashboardTile({
   );
 
   const className = cn(
-    "flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200",
+    "flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 aspect-square",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
     disabled && "opacity-50 cursor-not-allowed",
     !disabled && "active:scale-95 hover:scale-105",
     variant === 'primary' 
       ? "bg-accent hover:bg-accent/90" 
-      : "bg-card hover:bg-accent/10 border border-border"
+      : "bg-card/90 hover:bg-accent/10 border border-border backdrop-blur-sm"
   );
 
   if (disabled) {

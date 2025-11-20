@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import roofingBg from '@/assets/roofing-background.jpg';
 import { useStore } from '@/store/useStore';
 import { DashboardTile } from '@/components/DashboardTile';
 import { PromoBanner } from '@/components/PromoBanner';
@@ -39,20 +40,31 @@ export default function HomePage() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* Header */}
-      <header className="px-4 py-4 border-b border-border bg-card">
-        <h1 className="text-xl font-bold text-foreground">
-          Sons Property Solutions
+    <div className="flex flex-col min-h-screen bg-background relative">
+      {/* Background Image */}
+      <div 
+        className="fixed inset-0 z-0 bg-cover bg-center"
+        style={{ 
+          backgroundImage: `url(${roofingBg})`,
+          opacity: 0.08
+        }}
+      />
+      
+      {/* Content */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Header */}
+        <header className="px-4 py-4 border-b border-border bg-card/95 backdrop-blur-sm">
+          <h1 className="text-xl font-bold text-foreground">
+            Sons Property Solutions
         </h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Quality Service • Family Values
-        </p>
-      </header>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Quality Service • Family Values
+          </p>
+        </header>
 
-      {/* Dashboard Grid */}
-      <main className="flex-1 p-3">
-        <div className="grid grid-cols-4 gap-1 mb-3">
+        {/* Dashboard Grid */}
+        <main className="flex-1 p-3">
+          <div className="grid grid-cols-4 gap-2 mb-3">
           {/* Primary Actions - Accent colored */}
           <DashboardTile
             icon={CalendarDays}
@@ -154,15 +166,16 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Promotional Banner */}
-        {activePromo && (
-          <PromoBanner
-            title={activePromo.title}
-            description={activePromo.description}
-            code={activePromo.code}
-          />
-        )}
-      </main>
+          {/* Promotional Banner */}
+          {activePromo && (
+            <PromoBanner
+              title={activePromo.title}
+              description={activePromo.description}
+              code={activePromo.code}
+            />
+          )}
+        </main>
+      </div>
 
       {/* Modals & Drawers */}
       <BusinessHoursModal
