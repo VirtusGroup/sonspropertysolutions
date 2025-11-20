@@ -48,7 +48,7 @@ export default function HomePage() {
           backgroundImage: `url(${roofingBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.15
+          opacity: 0.25
         }}
       />
       
