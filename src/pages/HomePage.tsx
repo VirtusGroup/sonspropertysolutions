@@ -49,6 +49,20 @@ export default function HomePage() {
       
       {/* Content */}
       <div className="relative z-10 flex flex-col h-full">
+        {/* Brand Subheader */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="px-4 py-4 bg-card/90 backdrop-blur-sm border-b border-border"
+        >
+          <h2 className="text-base font-semibold text-foreground">
+            Your Home Service Partner
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Book roofing, gutter, and maintenance services. Track orders, get estimates, and manage your property care all in one place.
+          </p>
+        </motion.div>
 
         {/* Dashboard Grid */}
         <main className="p-2 overflow-hidden">
