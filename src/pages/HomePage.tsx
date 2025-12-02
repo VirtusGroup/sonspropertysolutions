@@ -33,7 +33,7 @@ export default function HomePage() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="flex flex-col h-screen bg-background relative overflow-hidden">
+    <div className="flex flex-col h-full bg-background relative overflow-hidden">
       {/* Background Image */}
       <motion.div 
         initial={{ opacity: 0 }}
@@ -54,7 +54,7 @@ export default function HomePage() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="px-4 py-4 border-b border-border bg-card/95 backdrop-blur-sm"
+          className="px-4 py-3 border-b border-border bg-card/95 backdrop-blur-sm"
         >
           <h1 className="text-xl font-bold text-foreground">
             Sons Property Solutions
@@ -65,8 +65,8 @@ export default function HomePage() {
         </motion.header>
 
         {/* Dashboard Grid */}
-        <main className="flex-1 p-3 overflow-hidden">
-          <div className="grid grid-cols-4 gap-2 auto-rows-fr">
+        <main className="flex-1 p-2 overflow-hidden">
+          <div className="grid grid-cols-4 gap-1.5 auto-rows-fr">
             {/* Primary Actions - Accent colored */}
             <DashboardTile
               icon={CalendarDays}
@@ -145,7 +145,7 @@ export default function HomePage() {
 
         {/* Promotional Banner - Anchored at bottom */}
         {activePromo && (
-          <div className="px-3 pb-3">
+          <div className="px-3 pb-20">
             <PromoBanner
               title={activePromo.title}
               description={activePromo.description}
