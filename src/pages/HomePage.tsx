@@ -65,7 +65,7 @@ export default function HomePage() {
         </motion.header>
 
         {/* Dashboard Grid */}
-        <main className="flex-1 p-2 overflow-hidden">
+        <main className="p-2 overflow-hidden">
           <div className="grid grid-cols-4 gap-1.5 auto-rows-fr">
             {/* Primary Actions - Accent colored */}
             <DashboardTile
@@ -143,9 +143,12 @@ export default function HomePage() {
           </div>
         </main>
 
+        {/* Spacer to push promo banner down */}
+        <div className="flex-1" />
+
         {/* Promotional Banner - Anchored at bottom */}
         {activePromo && (
-          <div className="px-3 pb-20">
+          <div className="px-3 pb-1.5">
             <PromoBanner
               title={activePromo.title}
               description={activePromo.description}
