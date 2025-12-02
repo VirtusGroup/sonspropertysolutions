@@ -111,7 +111,7 @@ export default function SupportPage() {
                   <span className="text-muted-foreground">Closed</span>
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t">
-                  <span>Emergency Service</span>
+                  <span>Self-Booked Service</span>
                   <span className="font-medium text-accent">24/7 Available</span>
                 </div>
               </div>
@@ -130,7 +130,7 @@ export default function SupportPage() {
               <Accordion type="single" collapsible className="w-full">
                 {faqs.map((faq, index) => (
                   <AccordionItem key={index} value={`item-${index}`}>
-                    <AccordionTrigger>{faq.question}</AccordionTrigger>
+                    <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
                     <AccordionContent>{faq.answer}</AccordionContent>
                   </AccordionItem>
                 ))}
