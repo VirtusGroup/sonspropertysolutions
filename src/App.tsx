@@ -2,8 +2,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import { MobileShell } from "@/components/layout/MobileShell";
+import { PageTransition } from "@/components/PageTransition";
 import HomePage from "./pages/HomePage";
 import ServicesPage from "./pages/ServicesPage";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
@@ -17,6 +19,27 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function AnimatedRoutes() {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+        <Route path="/services" element={<PageTransition><ServicesPage /></PageTransition>} />
+        <Route path="/services/:slug" element={<PageTransition><ServiceDetailPage /></PageTransition>} />
+        <Route path="/book" element={<PageTransition><BookPage /></PageTransition>} />
+        <Route path="/orders" element={<PageTransition><OrdersPage /></PageTransition>} />
+        <Route path="/orders/:id" element={<PageTransition><OrderDetailPage /></PageTransition>} />
+        <Route path="/account" element={<PageTransition><AccountPage /></PageTransition>} />
+        <Route path="/support" element={<PageTransition><SupportPage /></PageTransition>} />
+        <Route path="/install" element={<PageTransition><InstallPage /></PageTransition>} />
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -24,19 +47,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <MobileShell>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/services" element={<ServicesPage />} />
-            <Route path="/services/:slug" element={<ServiceDetailPage />} />
-            <Route path="/book" element={<BookPage />} />
-            <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/orders/:id" element={<OrderDetailPage />} />
-            <Route path="/account" element={<AccountPage />} />
-            <Route path="/support" element={<SupportPage />} />
-            <Route path="/install" element={<InstallPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AnimatedRoutes />
         </MobileShell>
       </BrowserRouter>
     </TooltipProvider>
