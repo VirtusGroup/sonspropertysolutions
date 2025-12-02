@@ -79,7 +79,6 @@ export function DashboardTile({
         duration: 0.3,
         ease: [0.25, 0.1, 0.25, 1]
       }}
-      whileHover={!disabled ? { y: -4, scale: 1.02, boxShadow: '0 8px 24px -6px hsl(215 45% 25% / 0.15)' } : undefined}
       whileTap={!disabled ? { scale: 0.95 } : undefined}
       className="h-full"
     >

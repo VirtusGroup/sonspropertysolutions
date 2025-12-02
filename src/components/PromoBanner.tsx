@@ -41,11 +41,11 @@ export function PromoBanner({
         >
           <Card className="relative overflow-hidden bg-gradient-to-br from-accent to-accent/80 border-accent">
             <div className="absolute top-2 right-2">
-              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <motion.div whileTap={{ scale: 0.9 }}>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-accent-foreground/70 hover:text-accent-foreground hover:bg-accent-foreground/10"
+                  className="h-8 w-8 text-accent-foreground/70 active:text-accent-foreground active:bg-accent-foreground/10"
                   onClick={handleDismiss}
                 >
                   <X className="h-4 w-4" />
@@ -81,11 +81,11 @@ export function PromoBanner({
                 {description}
               </p>
               
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <motion.div whileTap={{ scale: 0.98 }}>
                 <Button 
                   asChild 
                   variant="secondary"
-                  className="bg-accent-foreground text-accent hover:bg-accent-foreground/90"
+                  className="bg-accent-foreground text-accent active:bg-accent-foreground/90"
                 >
                   <Link to={ctaLink}>{ctaText}</Link>
                 </Button>
