@@ -21,17 +21,14 @@ export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
-      whileHover={{ y: -8, transition: { duration: 0.2 } }}
     >
       <Link to={`/services/${service.slug}`}>
-        <Card className="overflow-hidden hover:shadow-strong transition-shadow cursor-pointer h-full group">
+        <Card className="overflow-hidden transition-shadow cursor-pointer h-full">
           <div className="aspect-video bg-muted relative overflow-hidden">
-            <motion.img
+            <img
               src={service.heroImage}
               alt={service.title}
               className="w-full h-full object-cover"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.4 }}
             />
             <motion.div
               initial={{ x: 20, opacity: 0 }}
@@ -44,7 +41,7 @@ export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
             </motion.div>
           </div>
           <CardContent className="p-4">
-            <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-lg mb-2">
               {service.title}
             </h3>
             <p className="text-sm text-muted-foreground line-clamp-2">

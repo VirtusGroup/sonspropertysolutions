@@ -307,11 +307,7 @@ export default function ServiceDetailPage() {
                 <Separator />
 
                 {/* Estimate Display */}
-                <motion.div 
-                  className="bg-accent/10 p-4 rounded-lg"
-                  whileHover={{ scale: 1.01 }}
-                  transition={{ duration: 0.2 }}
-                >
+                <div className="bg-accent/10 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-muted-foreground">Estimated Price Range</span>
                   </div>
@@ -321,9 +317,9 @@ export default function ServiceDetailPage() {
                   <p className="text-xs text-muted-foreground mt-2">
                     * Final pricing may change after on-site inspection
                   </p>
-                </motion.div>
+                </div>
 
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <motion.div whileTap={{ scale: 0.98 }}>
                   <Button onClick={handleBookNow} size="lg" className="w-full">
                     Book This Service
                   </Button>

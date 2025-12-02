@@ -65,10 +65,9 @@ export default function OrdersPage() {
                   duration: 0.3,
                   ease: [0.25, 0.1, 0.25, 1]
                 }}
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
               >
                 <Link to={`/orders/${order.id}`}>
-                  <Card className="hover:shadow-strong transition-shadow cursor-pointer">
+                  <Card className="transition-shadow cursor-pointer">
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
