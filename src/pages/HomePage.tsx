@@ -49,20 +49,6 @@ export default function HomePage() {
       
       {/* Content */}
       <div className="relative z-10 flex flex-col h-full">
-        {/* Header */}
-        <motion.header 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="px-4 py-3 border-b border-border bg-card/95 backdrop-blur-sm"
-        >
-          <h1 className="text-xl font-bold text-foreground">
-            Sons Property Solutions
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Quality Service • Family Values
-          </p>
-        </motion.header>
 
         {/* Dashboard Grid */}
         <main className="p-2 overflow-hidden">
@@ -144,21 +130,7 @@ export default function HomePage() {
         </main>
       </div>
 
-      {/* Promotional Banner - Fixed position above nav bar */}
-      {activePromo && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
-          className="fixed bottom-[84px] left-3 right-3 z-40"
-        >
-          <PromoBanner
-            title={activePromo.title}
-            description={activePromo.description}
-            code={activePromo.code}
-          />
-        </motion.div>
-      )}
+      {/* Promotional Banner - Hidden for now */}
 
       {/* Modals & Drawers */}
       <BusinessHoursModal

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useStore } from '@/store/useStore';
 import { demoUsers } from '@/lib/demoData';
+import sonsLogo from '@/assets/sons-logo.png';
 
 interface MobileShellProps {
   children: ReactNode;
@@ -45,15 +46,15 @@ export function MobileShell({ children }: MobileShellProps) {
       >
         <div className="flex h-14 items-center justify-between px-4">
           <Link to="/" className="flex items-center space-x-2">
-            <motion.div 
+            <motion.img 
+              src={sonsLogo}
+              alt="Sons Property Solutions"
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm"
-            >
-              SP
-            </motion.div>
-            <span className="font-semibold text-lg">Sons Property</span>
+              className="h-8 w-8"
+            />
+            <span className="font-semibold text-lg">Sons Property Solutions</span>
           </Link>
 
           <DropdownMenu>
