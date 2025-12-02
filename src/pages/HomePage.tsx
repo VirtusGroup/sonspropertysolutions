@@ -33,7 +33,7 @@ export default function HomePage() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="flex flex-col min-h-screen bg-background relative">
+    <div className="flex flex-col h-screen bg-background relative overflow-hidden">
       {/* Background Image */}
       <motion.div 
         initial={{ opacity: 0 }}
@@ -48,7 +48,7 @@ export default function HomePage() {
       />
       
       {/* Content */}
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col h-full">
         {/* Header */}
         <motion.header 
           initial={{ opacity: 0, y: -20 }}
@@ -65,8 +65,8 @@ export default function HomePage() {
         </motion.header>
 
         {/* Dashboard Grid */}
-        <main className="flex-1 p-3">
-          <div className="grid grid-cols-4 gap-2 mb-3 auto-rows-fr">
+        <main className="flex-1 p-3 overflow-auto">
+          <div className="grid grid-cols-4 gap-2 auto-rows-fr">
             {/* Primary Actions - Accent colored */}
             <DashboardTile
               icon={CalendarDays}
@@ -141,16 +141,18 @@ export default function HomePage() {
               index={11}
             />
           </div>
+        </main>
 
-          {/* Promotional Banner */}
-          {activePromo && (
+        {/* Promotional Banner - Anchored at bottom */}
+        {activePromo && (
+          <div className="px-3 pb-3">
             <PromoBanner
               title={activePromo.title}
               description={activePromo.description}
               code={activePromo.code}
             />
-          )}
-        </main>
+          </div>
+        )}
       </div>
 
       {/* Modals & Drawers */}
