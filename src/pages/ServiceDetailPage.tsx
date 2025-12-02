@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -65,7 +66,6 @@ export default function ServiceDetailPage() {
   };
 
   const handleBookNow = () => {
-    // Navigate to book page with prefilled data
     navigate('/book', {
       state: {
         serviceId: service.id,
@@ -84,29 +84,53 @@ export default function ServiceDetailPage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Image */}
-      <div className="relative aspect-video bg-muted">
-        <img
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+        className="relative aspect-video bg-muted"
+      >
+        <motion.img
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.6 }}
           src={service.heroImage}
           alt={service.title}
           className="w-full h-full object-cover"
         />
-        <Button
-          variant="secondary"
-          size="icon"
-          className="absolute top-4 left-4"
-          onClick={() => navigate(-1)}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
         >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <Badge className="absolute top-4 right-4 bg-card/90 backdrop-blur">
-          {service.category}
-        </Badge>
-      </div>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="absolute top-4 left-4"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Badge className="absolute top-4 right-4 bg-card/90 backdrop-blur">
+            {service.category}
+          </Badge>
+        </motion.div>
+      </motion.div>
 
       <div className="flex-1 px-4 py-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
             <h1 className="text-3xl font-bold mb-2">{service.title}</h1>
             <div className="flex items-center gap-4 text-muted-foreground">
               <div className="flex items-center gap-1">
@@ -117,17 +141,28 @@ export default function ServiceDetailPage() {
                 ${service.basePrice}{priceUnit}
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Description */}
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground">{service.description}</p>
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground">{service.description}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Inclusions & Exclusions */}
-          <div className="grid gap-4 sm:grid-cols-2">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="grid gap-4 sm:grid-cols-2"
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -138,10 +173,16 @@ export default function ServiceDetailPage() {
               <CardContent>
                 <ul className="space-y-2">
                   {service.inclusions.map((item, idx) => (
-                    <li key={idx} className="text-sm flex items-start gap-2">
+                    <motion.li 
+                      key={idx} 
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.25 + idx * 0.05 }}
+                      className="text-sm flex items-start gap-2"
+                    >
                       <span className="text-success">•</span>
                       <span>{item}</span>
-                    </li>
+                    </motion.li>
                   ))}
                 </ul>
               </CardContent>
@@ -157,121 +198,139 @@ export default function ServiceDetailPage() {
               <CardContent>
                 <ul className="space-y-2">
                   {service.exclusions.map((item, idx) => (
-                    <li key={idx} className="text-sm flex items-start gap-2">
+                    <motion.li 
+                      key={idx} 
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.25 + idx * 0.05 }}
+                      className="text-sm flex items-start gap-2"
+                    >
                       <span className="text-muted-foreground">•</span>
                       <span className="text-muted-foreground">{item}</span>
-                    </li>
+                    </motion.li>
                   ))}
                 </ul>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
 
           {/* Estimator */}
-          <Card className="border-primary/20">
-            <CardHeader>
-              <CardTitle>Get an Estimate</CardTitle>
-              <CardDescription>
-                Adjust the details below for a customized price estimate
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {service.unit !== 'fixed' && (
-                <div className="space-y-2">
-                  <Label>
-                    Quantity ({service.unit.replace('_', ' ')})
-                  </Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                  />
-                </div>
-              )}
-
-              {service.category === 'roofing' && (
-                <>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="border-primary/20">
+              <CardHeader>
+                <CardTitle>Get an Estimate</CardTitle>
+                <CardDescription>
+                  Adjust the details below for a customized price estimate
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {service.unit !== 'fixed' && (
                   <div className="space-y-2">
-                    <Label>Roof Type</Label>
-                    <Select value={roofType} onValueChange={setRoofType}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="asphalt">Asphalt Shingles</SelectItem>
-                        <SelectItem value="metal">Metal</SelectItem>
-                        <SelectItem value="tile">Tile</SelectItem>
-                        <SelectItem value="slate">Slate</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label>
+                      Quantity ({service.unit.replace('_', ' ')})
+                    </Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Number(e.target.value))}
+                    />
                   </div>
+                )}
 
-                  <div className="space-y-2">
-                    <Label>Number of Stories</Label>
-                    <Select
-                      value={stories.toString()}
-                      onValueChange={(val) => setStories(Number(val))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 Story</SelectItem>
-                        <SelectItem value="2">2 Stories</SelectItem>
-                        <SelectItem value="3">3 Stories</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-
-              {service.addons.length > 0 && (
-                <div className="space-y-3">
-                  <Label>Add-ons</Label>
-                  {service.addons.map((addon) => (
-                    <div key={addon.id} className="flex items-start space-x-3">
-                      <Checkbox
-                        id={addon.id}
-                        checked={selectedAddons.includes(addon.id)}
-                        onCheckedChange={() => handleToggleAddon(addon.id)}
-                      />
-                      <div className="flex-1">
-                        <label
-                          htmlFor={addon.id}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          {addon.title} (+${addon.price})
-                        </label>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {addon.description}
-                        </p>
-                      </div>
+                {service.category === 'roofing' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Roof Type</Label>
+                      <Select value={roofType} onValueChange={setRoofType}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="asphalt">Asphalt Shingles</SelectItem>
+                          <SelectItem value="metal">Metal</SelectItem>
+                          <SelectItem value="tile">Tile</SelectItem>
+                          <SelectItem value="slate">Slate</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  ))}
-                </div>
-              )}
 
-              <Separator />
+                    <div className="space-y-2">
+                      <Label>Number of Stories</Label>
+                      <Select
+                        value={stories.toString()}
+                        onValueChange={(val) => setStories(Number(val))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 Story</SelectItem>
+                          <SelectItem value="2">2 Stories</SelectItem>
+                          <SelectItem value="3">3 Stories</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
 
-              {/* Estimate Display */}
-              <div className="bg-accent/10 p-4 rounded-lg">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-muted-foreground">Estimated Price Range</span>
-                </div>
-                <div className="text-3xl font-bold text-primary">
-                  ${estimateLow} - ${estimateHigh}
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  * Final pricing may change after on-site inspection
-                </p>
-              </div>
+                {service.addons.length > 0 && (
+                  <div className="space-y-3">
+                    <Label>Add-ons</Label>
+                    {service.addons.map((addon) => (
+                      <div key={addon.id} className="flex items-start space-x-3">
+                        <Checkbox
+                          id={addon.id}
+                          checked={selectedAddons.includes(addon.id)}
+                          onCheckedChange={() => handleToggleAddon(addon.id)}
+                        />
+                        <div className="flex-1">
+                          <label
+                            htmlFor={addon.id}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {addon.title} (+${addon.price})
+                          </label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {addon.description}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-              <Button onClick={handleBookNow} size="lg" className="w-full">
-                Book This Service
-              </Button>
-            </CardContent>
-          </Card>
+                <Separator />
+
+                {/* Estimate Display */}
+                <motion.div 
+                  className="bg-accent/10 p-4 rounded-lg"
+                  whileHover={{ scale: 1.01 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-muted-foreground">Estimated Price Range</span>
+                  </div>
+                  <div className="text-3xl font-bold text-primary">
+                    ${estimateLow} - ${estimateHigh}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    * Final pricing may change after on-site inspection
+                  </p>
+                </motion.div>
+
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button onClick={handleBookNow} size="lg" className="w-full">
+                    Book This Service
+                  </Button>
+                </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
     </div>

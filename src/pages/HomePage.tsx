@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import roofingBg from '@/assets/roofing-background.jpg';
 import { useStore } from '@/store/useStore';
 import { DashboardTile } from '@/components/DashboardTile';
@@ -42,131 +43,154 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-background relative">
       {/* Background Image */}
-      <div 
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.25 }}
+        transition={{ duration: 0.8 }}
         className="fixed inset-0 z-0"
         style={{ 
           backgroundImage: `url(${roofingBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.25
         }}
       />
       
       {/* Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
-        <header className="px-4 py-4 border-b border-border bg-card/95 backdrop-blur-sm">
+        <motion.header 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="px-4 py-4 border-b border-border bg-card/95 backdrop-blur-sm"
+        >
           <h1 className="text-xl font-bold text-foreground">
             Sons Property Solutions
-        </h1>
+          </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Quality Service • Family Values
           </p>
-        </header>
+        </motion.header>
 
         {/* Dashboard Grid */}
         <main className="flex-1 p-3">
           <div className="grid grid-cols-4 gap-2 mb-3 auto-rows-fr">
-          {/* Primary Actions - Accent colored */}
-          <DashboardTile
-            icon={CalendarDays}
-            label="Book Service"
-            href="/book"
-            variant="primary"
-          />
-          <DashboardTile
-            icon={ClipboardList}
-            label="My Orders"
-            href="/orders"
-            variant="primary"
-            badge={userOrders.length}
-          />
-          <DashboardTile
-            icon={Wrench}
-            label="View Services"
-            href="/services"
-            variant="primary"
-          />
-          <DashboardTile
-            icon={Bell}
-            label="Notifications"
-            onClick={() => setNotificationsOpen(true)}
-            variant="primary"
-            badge={unreadCount}
-          />
+            {/* Primary Actions - Accent colored */}
+            <DashboardTile
+              icon={CalendarDays}
+              label="Book Service"
+              href="/book"
+              variant="primary"
+              index={0}
+            />
+            <DashboardTile
+              icon={ClipboardList}
+              label="My Orders"
+              href="/orders"
+              variant="primary"
+              badge={userOrders.length}
+              index={1}
+            />
+            <DashboardTile
+              icon={Wrench}
+              label="View Services"
+              href="/services"
+              variant="primary"
+              index={2}
+            />
+            <DashboardTile
+              icon={Bell}
+              label="Notifications"
+              onClick={() => setNotificationsOpen(true)}
+              variant="primary"
+              badge={unreadCount}
+              index={3}
+            />
 
-          {/* Service Categories */}
-          <DashboardTile
-            icon={Home}
-            label="Roofing Services"
-            href="/services?category=roofing"
-          />
-          <DashboardTile
-            icon={Droplets}
-            label="Gutter Services"
-            href="/services?category=gutters"
-          />
-          <DashboardTile
-            icon={AlertTriangle}
-            label="Emergency"
-            href="/services?category=storm"
-          />
-          <DashboardTile
-            icon={Settings}
-            label="Maintenance"
-            href="/services?category=maintenance"
-          />
+            {/* Service Categories */}
+            <DashboardTile
+              icon={Home}
+              label="Roofing Services"
+              href="/services?category=roofing"
+              index={4}
+            />
+            <DashboardTile
+              icon={Droplets}
+              label="Gutter Services"
+              href="/services?category=gutters"
+              index={5}
+            />
+            <DashboardTile
+              icon={AlertTriangle}
+              label="Emergency"
+              href="/services?category=storm"
+              index={6}
+            />
+            <DashboardTile
+              icon={Settings}
+              label="Maintenance"
+              href="/services?category=maintenance"
+              index={7}
+            />
 
-          {/* Tools & Utilities */}
-          <DashboardTile
-            icon={Calculator}
-            label="Price Estimator"
-            href="/book"
-          />
-          <DashboardTile
-            icon={Clock}
-            label="Business Hours"
-            onClick={() => setHoursModalOpen(true)}
-          />
-          <DashboardTile
-            icon={MapPin}
-            label="Service Area"
-            onClick={() => setAreaModalOpen(true)}
-          />
-          <DashboardTile icon={Star} label="Favorites" disabled />
+            {/* Tools & Utilities */}
+            <DashboardTile
+              icon={Calculator}
+              label="Price Estimator"
+              href="/book"
+              index={8}
+            />
+            <DashboardTile
+              icon={Clock}
+              label="Business Hours"
+              onClick={() => setHoursModalOpen(true)}
+              index={9}
+            />
+            <DashboardTile
+              icon={MapPin}
+              label="Service Area"
+              onClick={() => setAreaModalOpen(true)}
+              index={10}
+            />
+            <DashboardTile icon={Star} label="Favorites" disabled index={11} />
 
-          {/* Account Features */}
-          <DashboardTile icon={User} label="My Account" href="/account" />
-          <DashboardTile
-            icon={MapPinned}
-            label="Addresses"
-            href="/account"
-          />
-          <DashboardTile icon={CreditCard} label="Payment" disabled />
-          <DashboardTile icon={Gift} label="Referrals" href="/account" />
+            {/* Account Features */}
+            <DashboardTile icon={User} label="My Account" href="/account" index={12} />
+            <DashboardTile
+              icon={MapPinned}
+              label="Addresses"
+              href="/account"
+              index={13}
+            />
+            <DashboardTile icon={CreditCard} label="Payment" disabled index={14} />
+            <DashboardTile icon={Gift} label="Referrals" href="/account" index={15} />
 
-          {/* Communication */}
-          <DashboardTile
-            icon={Phone}
-            label="Call Us"
-            href="tel:+18172310171"
-          />
-          <DashboardTile
-            icon={MessageSquare}
-            label="Text Us"
-            href="sms:+18172310171"
-          />
-          <DashboardTile
-            icon={Mail}
-            label="Email"
-            href="mailto:support@sonsroofs.com"
-          />
-          <DashboardTile
-            icon={HelpCircle}
-            label="Help Center"
-            href="/support"
-          />
-        </div>
+            {/* Communication */}
+            <DashboardTile
+              icon={Phone}
+              label="Call Us"
+              href="tel:+18172310171"
+              index={16}
+            />
+            <DashboardTile
+              icon={MessageSquare}
+              label="Text Us"
+              href="sms:+18172310171"
+              index={17}
+            />
+            <DashboardTile
+              icon={Mail}
+              label="Email"
+              href="mailto:support@sonsroofs.com"
+              index={18}
+            />
+            <DashboardTile
+              icon={HelpCircle}
+              label="Help Center"
+              href="/support"
+              index={19}
+            />
+          </div>
 
           {/* Promotional Banner */}
           {activePromo && (

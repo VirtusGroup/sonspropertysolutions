@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -60,17 +61,27 @@ export default function ServicesPage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <div className="bg-muted/50 px-4 py-8 border-b">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="bg-muted/50 px-4 py-8 border-b"
+      >
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-2">Our Services</h1>
           <p className="text-muted-foreground">
             Professional property services for your home
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Filters */}
-      <div className="sticky top-14 z-40 bg-background border-b px-4 py-4">
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        className="sticky top-14 z-40 bg-background border-b px-4 py-4"
+      >
         <div className="max-w-4xl mx-auto space-y-3">
           {/* Search */}
           <div className="relative">
@@ -111,19 +122,23 @@ export default function ServicesPage() {
             </Select>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Service Grid */}
       <div className="flex-1 px-4 py-6">
         <div className="max-w-4xl mx-auto">
           {filteredServices.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredServices.map((service) => (
-                <ServiceCard key={service.id} service={service} />
+              {filteredServices.map((service, index) => (
+                <ServiceCard key={service.id} service={service} index={index} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12"
+            >
               <p className="text-muted-foreground">No services found</p>
               <Button
                 variant="link"
@@ -134,7 +149,7 @@ export default function ServicesPage() {
               >
                 Clear filters
               </Button>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

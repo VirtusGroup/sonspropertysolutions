@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,10 +16,9 @@ import {
   LogOut,
   Plus,
   Trash2,
-  Edit,
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,6 @@ import { toast } from 'sonner';
 
 export default function AccountPage() {
   const { currentUser, updateUser, addAddress, deleteAddress } = useStore();
-  const navigate = useNavigate();
   const [editingProfile, setEditingProfile] = useState(false);
   const [addingAddress, setAddingAddress] = useState(false);
   const [name, setName] = useState(currentUser?.name || '');
@@ -63,7 +62,6 @@ export default function AccountPage() {
   };
 
   const handleSignOut = () => {
-    // In a real app, this would clear auth
     toast.success('Signed out (demo only)');
   };
 
@@ -88,11 +86,21 @@ export default function AccountPage() {
   return (
     <div className="flex flex-col min-h-screen pb-6">
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-4 py-8">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-4 py-8"
+      >
         <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <div className="h-16 w-16 rounded-full bg-primary-foreground/20 flex items-center justify-center text-2xl font-bold">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
+            className="h-16 w-16 rounded-full bg-primary-foreground/20 flex items-center justify-center text-2xl font-bold"
+          >
             {currentUser.name.split(' ').map(n => n[0]).join('')}
-          </div>
+          </motion.div>
           <div className="flex-1">
             <h1 className="text-2xl font-bold">{currentUser.name}</h1>
             <p className="opacity-90">{currentUser.email}</p>
@@ -101,213 +109,257 @@ export default function AccountPage() {
             </Badge>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="flex-1 px-4 pt-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  <CardTitle>Profile</CardTitle>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEditingProfile(!editingProfile)}
-                >
-                  {editingProfile ? 'Cancel' : 'Edit'}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {editingProfile ? (
-                <>
-                  <div className="space-y-2">
-                    <Label>Name</Label>
-                    <Input value={name} onChange={(e) => setName(e.target.value)} />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+          >
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    <CardTitle>Profile</CardTitle>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Phone</Label>
-                    <Input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input value={currentUser.email} disabled />
-                  </div>
-                  <Button onClick={handleSaveProfile} className="w-full">
-                    Save Changes
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditingProfile(!editingProfile)}
+                  >
+                    {editingProfile ? 'Cancel' : 'Edit'}
                   </Button>
-                </>
-              ) : (
-                <>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <p>{currentUser.phone || 'Not set'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p>{currentUser.email}</p>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {editingProfile ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Name</Label>
+                      <Input value={name} onChange={(e) => setName(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Phone</Label>
+                      <Input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <Input value={currentUser.email} disabled />
+                    </div>
+                    <Button onClick={handleSaveProfile} className="w-full">
+                      Save Changes
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Phone</p>
+                      <p>{currentUser.phone || 'Not set'}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p>{currentUser.email}</p>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Addresses */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  <CardTitle>Saved Addresses</CardTitle>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setAddingAddress(true)}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {currentUser.addresses.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No saved addresses</p>
-              ) : (
-                currentUser.addresses.map((addr) => (
-                  <div key={addr.id} className="flex items-start justify-between p-3 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium">{addr.label}</p>
-                        {addr.isDefault && (
-                          <Badge variant="secondary" className="text-xs">Default</Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {addr.street}
-                        {addr.unit && `, ${addr.unit}`}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {addr.city}, {addr.state} {addr.zip}
-                      </p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        deleteAddress(addr.id);
-                        toast.success('Address deleted');
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.3 }}
+          >
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    <CardTitle>Saved Addresses</CardTitle>
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Notifications */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                <CardTitle>Notifications</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">In-app notifications</p>
-                  <p className="text-sm text-muted-foreground">
-                    Receive updates about your orders
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Push notifications</p>
-                  <p className="text-sm text-muted-foreground">
-                    Demo only - not available yet
-                  </p>
-                </div>
-                <Switch disabled />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Payment */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                <CardTitle>Payment Methods</CardTitle>
-              </div>
-              <CardDescription>
-                Payment at time of service (demo app)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" disabled className="w-full">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Payment Method (Demo)
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Referrals */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Gift className="h-5 w-5" />
-                <CardTitle>Referrals & Credits</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-accent/10 rounded-lg text-center">
-                <p className="text-3xl font-bold text-accent">${currentUser.credits}</p>
-                <p className="text-sm text-muted-foreground">Available Credits</p>
-              </div>
-              <div className="space-y-2">
-                <Label>Your Referral Code</Label>
-                <div className="flex gap-2">
-                  <Input value={currentUser.referralCode} readOnly />
                   <Button
-                    variant="outline"
-                    onClick={() => {
-                      navigator.clipboard.writeText(currentUser.referralCode);
-                      toast.success('Code copied!');
-                    }}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAddingAddress(true)}
                   >
-                    Copy
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Share with friends to earn $25 credit per referral
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {currentUser.addresses.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No saved addresses</p>
+                ) : (
+                  currentUser.addresses.map((addr, index) => (
+                    <motion.div 
+                      key={addr.id} 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-start justify-between p-3 border rounded-lg"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-medium">{addr.label}</p>
+                          {addr.isDefault && (
+                            <Badge variant="secondary" className="text-xs">Default</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {addr.street}
+                          {addr.unit && `, ${addr.unit}`}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {addr.city}, {addr.state} {addr.zip}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          deleteAddress(addr.id);
+                          toast.success('Address deleted');
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Notifications */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+          >
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  <CardTitle>Notifications</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">In-app notifications</p>
+                    <p className="text-sm text-muted-foreground">
+                      Receive updates about your orders
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Push notifications</p>
+                    <p className="text-sm text-muted-foreground">
+                      Demo only - not available yet
+                    </p>
+                  </div>
+                  <Switch disabled />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Payment */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.3 }}
+          >
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  <CardTitle>Payment Methods</CardTitle>
+                </div>
+                <CardDescription>
+                  Payment at time of service (demo app)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" disabled className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Payment Method (Demo)
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Referrals */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
+          >
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Gift className="h-5 w-5" />
+                  <CardTitle>Referrals & Credits</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-accent/10 rounded-lg text-center">
+                  <p className="text-3xl font-bold text-accent">${currentUser.credits}</p>
+                  <p className="text-sm text-muted-foreground">Available Credits</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Your Referral Code</Label>
+                  <div className="flex gap-2">
+                    <Input value={currentUser.referralCode} readOnly />
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        navigator.clipboard.writeText(currentUser.referralCode);
+                        toast.success('Code copied!');
+                      }}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Share with friends to earn $25 credit per referral
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Sign Out */}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleSignOut}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.3 }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
           >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out (Demo)
-          </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out (Demo)
+            </Button>
+          </motion.div>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Briefcase, CalendarPlus, ClipboardList, User, Menu } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,13 +37,23 @@ export function MobileShell({ children }: MobileShellProps) {
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {/* Header with subtle glass effect */}
+      <motion.header 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+        className="sticky top-0 z-50 w-full border-b liquid-glass-header"
+      >
         <div className="flex h-14 items-center justify-between px-4">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
+            <motion.div 
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm"
+            >
               SP
-            </div>
+            </motion.div>
             <span className="font-semibold text-lg">Sons Property</span>
           </Link>
 
@@ -87,36 +98,66 @@ export function MobileShell({ children }: MobileShellProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </header>
+      </motion.header>
 
       {/* Main Content */}
-      <main className="flex-1 pb-20">{children}</main>
+      <main className="flex-1 pb-24">{children}</main>
 
-      {/* Bottom Tab Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-area-inset-bottom">
-        <div className="flex items-center justify-around h-16">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const active = isActive(tab.path);
+      {/* iOS 26 Liquid Glass Floating Navigation Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 safe-area-inset-bottom">
+        <motion.nav 
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+          className="liquid-glass-nav rounded-2xl"
+        >
+          <div className="flex items-center justify-around h-16 px-2 relative">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const active = isActive(tab.path);
 
-            return (
-              <Link
-                key={tab.path}
-                to={tab.path}
-                className={cn(
-                  'flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors',
-                  active
-                    ? 'text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <Icon className={cn('h-5 w-5', active && 'fill-current')} />
-                <span className="text-xs font-medium">{tab.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+              return (
+                <Link
+                  key={tab.path}
+                  to={tab.path}
+                  className="relative flex flex-col items-center justify-center flex-1 h-full z-10"
+                >
+                  {active && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-1 rounded-xl liquid-glass-indicator"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <motion.div
+                    whileTap={{ scale: 0.85 }}
+                    className="relative z-10 flex flex-col items-center gap-1"
+                  >
+                    <Icon 
+                      className={cn(
+                        'h-5 w-5 transition-all duration-200',
+                        active 
+                          ? 'text-primary scale-110' 
+                          : 'text-muted-foreground'
+                      )} 
+                    />
+                    <span 
+                      className={cn(
+                        'text-[10px] font-medium transition-all duration-200',
+                        active 
+                          ? 'text-primary' 
+                          : 'text-muted-foreground'
+                      )}
+                    >
+                      {tab.label}
+                    </span>
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </div>
+        </motion.nav>
+      </div>
     </div>
   );
 }
