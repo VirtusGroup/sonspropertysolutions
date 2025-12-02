@@ -13,6 +13,7 @@ import OrdersPage from "./pages/OrdersPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
 import AccountPage from "./pages/AccountPage";
 import SupportPage from "./pages/SupportPage";
+import ContactPage from "./pages/ContactPage";
 import InstallPage from "./pages/InstallPage";
 import NotFound from "./pages/NotFound";
 
@@ -31,6 +32,7 @@ function AnimatedRoutes() {
         <Route path="/orders/:id" element={<PageTransition><OrderDetailPage /></PageTransition>} />
         <Route path="/account" element={<PageTransition><AccountPage /></PageTransition>} />
         <Route path="/support" element={<PageTransition><SupportPage /></PageTransition>} />
+        <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
         <Route path="/install" element={<PageTransition><InstallPage /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
