@@ -54,7 +54,7 @@ export default function HomePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="px-4 py-3 bg-background/30 backdrop-blur-[2px]"
+          className="px-4 py-3"
         >
           <h2 className="text-base font-semibold text-foreground">
             Your Home Service Partner
@@ -65,7 +65,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Dashboard Grid */}
-        <main className="flex-1 p-2 pb-2 overflow-hidden">
+        <main className="flex-1 p-2 pb-2 overflow-hidden flex flex-col">
           <div className="grid grid-cols-4 gap-1.5 auto-rows-fr">
             {/* Primary Actions - Accent colored */}
             <DashboardTile
@@ -147,7 +147,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.4 }}
-            className="mt-2"
+            className="flex-1 flex flex-col justify-center"
           >
             <h3 className="text-sm font-semibold text-foreground mb-2 px-2">
               Popular Services
