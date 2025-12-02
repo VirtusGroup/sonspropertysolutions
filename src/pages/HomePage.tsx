@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import roofingBg from '@/assets/roofing-background.jpg';
 import { useStore } from '@/store/useStore';
 import { DashboardTile } from '@/components/DashboardTile';
-import { PromoBanner } from '@/components/PromoBanner';
+import { PopularServicesGrid } from '@/components/PopularServicesGrid';
 import { BusinessHoursModal } from '@/components/modals/BusinessHoursModal';
 import { ServiceAreaModal } from '@/components/modals/ServiceAreaModal';
 import { NotificationsDrawer } from '@/components/drawers/NotificationsDrawer';
@@ -141,6 +141,19 @@ export default function HomePage() {
               index={11}
             />
           </div>
+
+          {/* Popular Services Section */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
+            className="mt-4"
+          >
+            <h3 className="text-sm font-semibold text-foreground mb-2 px-2">
+              Popular Services
+            </h3>
+            <PopularServicesGrid />
+          </motion.div>
         </main>
       </div>
 
