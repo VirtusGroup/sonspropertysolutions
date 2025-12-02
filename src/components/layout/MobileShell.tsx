@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Briefcase, CalendarPlus, ClipboardList, User, Menu } from 'lucide-react';
+import { Home, Briefcase, ClipboardList, User, Menu } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,6 @@ interface MobileShellProps {
 const tabs = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/services', icon: Briefcase, label: 'Services' },
-  { path: '/book', icon: CalendarPlus, label: 'Book' },
   { path: '/orders', icon: ClipboardList, label: 'Orders' },
   { path: '/account', icon: User, label: 'Account' },
 ];
@@ -42,7 +41,7 @@ export function MobileShell({ children }: MobileShellProps) {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-        className="sticky top-0 z-50 w-full border-b liquid-glass-header"
+        className="sticky top-0 z-50 w-full border-b bg-background"
       >
         <div className="flex h-14 items-center justify-between px-4">
           <Link to="/" className="flex items-center space-x-2">
