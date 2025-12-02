@@ -23,7 +23,7 @@ export default function OrdersPage() {
           title="No orders yet"
           description="Book your first service in minutes. Professional service, trusted quality."
           actionLabel="Book Service"
-          onAction={() => (window.location.href = '/book')}
+          onAction={() => (window.location.href = '/services')}
         />
       </div>
     );
