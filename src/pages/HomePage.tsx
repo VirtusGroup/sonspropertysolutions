@@ -142,21 +142,23 @@ export default function HomePage() {
             />
           </div>
         </main>
-
-        {/* Spacer to push promo banner down */}
-        <div className="flex-1" />
-
-        {/* Promotional Banner - Anchored at bottom */}
-        {activePromo && (
-          <div className="mt-auto px-3 pb-1.5">
-            <PromoBanner
-              title={activePromo.title}
-              description={activePromo.description}
-              code={activePromo.code}
-            />
-          </div>
-        )}
       </div>
+
+      {/* Promotional Banner - Fixed position above nav bar */}
+      {activePromo && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="fixed bottom-[84px] left-3 right-3 z-40"
+        >
+          <PromoBanner
+            title={activePromo.title}
+            description={activePromo.description}
+            code={activePromo.code}
+          />
+        </motion.div>
+      )}
 
       {/* Modals & Drawers */}
       <BusinessHoursModal
