@@ -148,7 +148,7 @@ export default function HomePage() {
 
         {/* Promotional Banner - Anchored at bottom */}
         {activePromo && (
-          <div className="px-3 pb-1.5">
+          <div className="mt-auto px-3 pb-1.5">
             <PromoBanner
               title={activePromo.title}
               description={activePromo.description}
