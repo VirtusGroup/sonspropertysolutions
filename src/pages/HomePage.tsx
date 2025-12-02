@@ -12,22 +12,14 @@ import {
   ClipboardList,
   Wrench,
   Bell,
-  Home,
-  Droplets,
-  AlertTriangle,
-  Settings,
   Calculator,
   Clock,
   MapPin,
-  Star,
   User,
   MapPinned,
-  CreditCard,
   Gift,
-  Phone,
-  MessageSquare,
-  Mail,
   HelpCircle,
+  Phone,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -107,88 +99,46 @@ export default function HomePage() {
               index={3}
             />
 
-            {/* Service Categories */}
-            <DashboardTile
-              icon={Home}
-              label="Roofing Services"
-              href="/services?category=roofing"
-              index={4}
-            />
-            <DashboardTile
-              icon={Droplets}
-              label="Gutter Services"
-              href="/services?category=gutters"
-              index={5}
-            />
-            <DashboardTile
-              icon={AlertTriangle}
-              label="Emergency"
-              href="/services?category=storm"
-              index={6}
-            />
-            <DashboardTile
-              icon={Settings}
-              label="Maintenance"
-              href="/services?category=maintenance"
-              index={7}
-            />
-
             {/* Tools & Utilities */}
             <DashboardTile
               icon={Calculator}
               label="Price Estimator"
-              href="/book"
-              index={8}
+              href="/services"
+              index={4}
             />
             <DashboardTile
               icon={Clock}
               label="Business Hours"
               onClick={() => setHoursModalOpen(true)}
-              index={9}
+              index={5}
             />
             <DashboardTile
               icon={MapPin}
               label="Service Area"
               onClick={() => setAreaModalOpen(true)}
-              index={10}
+              index={6}
             />
-            <DashboardTile icon={Star} label="Favorites" disabled index={11} />
+            <DashboardTile
+              icon={Phone}
+              label="Contact Us"
+              href="/contact"
+              index={7}
+            />
 
             {/* Account Features */}
-            <DashboardTile icon={User} label="My Account" href="/account" index={12} />
+            <DashboardTile icon={User} label="My Account" href="/account" index={8} />
             <DashboardTile
               icon={MapPinned}
               label="Addresses"
               href="/account"
-              index={13}
+              index={9}
             />
-            <DashboardTile icon={CreditCard} label="Payment" disabled index={14} />
-            <DashboardTile icon={Gift} label="Referrals" href="/account" index={15} />
-
-            {/* Communication */}
-            <DashboardTile
-              icon={Phone}
-              label="Call Us"
-              href="tel:+18172310171"
-              index={16}
-            />
-            <DashboardTile
-              icon={MessageSquare}
-              label="Text Us"
-              href="sms:+18172310171"
-              index={17}
-            />
-            <DashboardTile
-              icon={Mail}
-              label="Email"
-              href="mailto:support@sonsroofs.com"
-              index={18}
-            />
+            <DashboardTile icon={Gift} label="Referrals" href="/account" index={10} />
             <DashboardTile
               icon={HelpCircle}
               label="Help Center"
               href="/support"
-              index={19}
+              index={11}
             />
           </div>
 
