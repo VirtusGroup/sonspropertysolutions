@@ -54,12 +54,12 @@ All colors MUST be HSL.
     --shadow-strong: 0 8px 24px -6px hsl(215 45% 25% / 0.2);
 
     /* iOS 26 Liquid Glass Variables */
-    --glass-blur: 20px;
-    --glass-bg: hsl(0 0% 100% / 0.7);
-    --glass-border: hsl(0 0% 100% / 0.3);
-    --glass-inset: hsl(0 0% 100% / 0.5);
-    --glass-shadow: 0 8px 32px hsl(0 0% 0% / 0.12);
-    --glass-shadow-inset: inset 0 1px 0 hsl(0 0% 100% / 0.4);
+    --glass-blur: 30px;
+    --glass-bg: hsl(0 0% 100% / 0.35);
+    --glass-border: hsl(0 0% 100% / 0.25);
+    --glass-inset: hsl(0 0% 100% / 0.3);
+    --glass-shadow: 0 8px 32px hsl(0 0% 0% / 0.1);
+    --glass-shadow-inset: inset 0 1px 0 hsl(0 0% 100% / 0.3);
   }
 
   .dark {
@@ -102,11 +102,12 @@ All colors MUST be HSL.
     --shadow-strong: 0 8px 24px -6px hsl(0 0% 0% / 0.5);
 
     /* iOS 26 Liquid Glass Variables - Dark Mode */
-    --glass-bg: hsl(215 30% 15% / 0.6);
-    --glass-border: hsl(0 0% 100% / 0.1);
-    --glass-inset: hsl(0 0% 100% / 0.15);
-    --glass-shadow: 0 8px 32px hsl(0 0% 0% / 0.3);
-    --glass-shadow-inset: inset 0 1px 0 hsl(0 0% 100% / 0.1);
+    --glass-blur: 30px;
+    --glass-bg: hsl(215 30% 15% / 0.4);
+    --glass-border: hsl(0 0% 100% / 0.08);
+    --glass-inset: hsl(0 0% 100% / 0.1);
+    --glass-shadow: 0 8px 32px hsl(0 0% 0% / 0.25);
+    --glass-shadow-inset: inset 0 1px 0 hsl(0 0% 100% / 0.08);
   }
 }
 

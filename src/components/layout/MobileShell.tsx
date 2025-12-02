@@ -104,14 +104,14 @@ export function MobileShell({ children }: MobileShellProps) {
       <main className="flex-1 pb-24">{children}</main>
 
       {/* iOS 26 Liquid Glass Floating Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 safe-area-inset-bottom">
+      <div className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-5 safe-area-inset-bottom">
         <motion.nav 
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-          className="liquid-glass-nav rounded-2xl"
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="liquid-glass-nav rounded-full mx-auto max-w-md"
         >
-          <div className="flex items-center justify-around h-16 px-2 relative">
+          <div className="flex items-center justify-around h-14 px-3 relative">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const active = isActive(tab.path);
@@ -125,17 +125,17 @@ export function MobileShell({ children }: MobileShellProps) {
                   {active && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute inset-1 rounded-xl liquid-glass-indicator"
+                      className="absolute inset-1 rounded-full liquid-glass-indicator"
                       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                     />
                   )}
                   <motion.div
                     whileTap={{ scale: 0.85 }}
-                    className="relative z-10 flex flex-col items-center gap-1"
+                    className="relative z-10 flex flex-col items-center gap-0.5"
                   >
                     <Icon 
                       className={cn(
-                        'h-5 w-5 transition-all duration-200',
+                        'h-4 w-4 transition-all duration-200',
                         active 
                           ? 'text-primary scale-110' 
                           : 'text-muted-foreground'
@@ -143,7 +143,7 @@ export function MobileShell({ children }: MobileShellProps) {
                     />
                     <span 
                       className={cn(
-                        'text-[10px] font-medium transition-all duration-200',
+                        'text-[9px] font-medium transition-all duration-200',
                         active 
                           ? 'text-primary' 
                           : 'text-muted-foreground'
