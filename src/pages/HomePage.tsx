@@ -65,7 +65,7 @@ export default function HomePage() {
         </motion.header>
 
         {/* Dashboard Grid */}
-        <main className="flex-1 p-3 overflow-auto">
+        <main className="flex-1 p-3 overflow-hidden">
           <div className="grid grid-cols-4 gap-2 auto-rows-fr">
             {/* Primary Actions - Accent colored */}
             <DashboardTile
