@@ -79,7 +79,7 @@ export default function HomePage() {
             <DashboardTile
               icon={CalendarDays}
               label="Book Service"
-              href="/book"
+              href="/services"
               variant="primary"
               index={0}
             />
