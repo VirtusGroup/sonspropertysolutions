@@ -233,6 +233,7 @@ export default function BookingPage() {
 
       const orderInput: CreateOrderInput = {
         service_id: bookingState.serviceId,
+        service_category: service.category,
         address_id: selectedAddress || null,
         address_snapshot: addressSnapshot,
         property_type: propertyType,
