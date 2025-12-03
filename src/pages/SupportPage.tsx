@@ -35,7 +35,7 @@ export default function SupportPage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <div className="bg-muted/50 px-4 py-8 border-b">
+      <div className="bg-muted/50 px-4 py-4 border-b">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-3xl font-bold mb-2">Support & Help</h1>
           <p className="text-muted-foreground">
