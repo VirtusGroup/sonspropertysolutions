@@ -16,13 +16,26 @@ const tabs = [
   { path: '/account', icon: User, label: 'Account' },
 ];
 
+const authRoutes = ['/login', '/register', '/forgot-password'];
+
 export function MobileShell({ children }: MobileShellProps) {
   const location = useLocation();
+
+  const isAuthPage = authRoutes.includes(location.pathname);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
+
+  // On auth pages, render without header and nav
+  if (isAuthPage) {
+    return (
+      <div className="flex flex-col min-h-screen w-full max-w-md mx-auto bg-background shadow-xl">
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen w-full max-w-md mx-auto bg-background shadow-xl">

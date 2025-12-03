@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, LogIn, Mail, Lock } from 'lucide-react';
+import { LogIn, Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import sonsLogo from '@/assets/sons-logo.png';
 
@@ -60,16 +60,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col min-h-full bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <button onClick={() => navigate('/')} className="p-1">
-            <ArrowLeft className="w-5 h-5 text-foreground" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">Sign In</h1>
-        </div>
-      </div>
-
       <div className="flex-1 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -189,20 +179,6 @@ export default function LoginPage() {
               </Button>
             </CardFooter>
           </Card>
-
-          {/* Demo credentials hint */}
-          {import.meta.env.DEV && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="mt-4 p-3 bg-muted rounded-lg text-sm text-muted-foreground"
-            >
-              <p className="font-medium mb-1">Demo Credentials:</p>
-              <p>Email: sarah.johnson@example.com</p>
-              <p>Password: password123</p>
-            </motion.div>
-          )}
         </motion.div>
       </div>
     </div>
