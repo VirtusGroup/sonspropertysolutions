@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { z } from 'zod';
-import { useStore } from '@/store/useStore';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +18,7 @@ const loginSchema = z.object({
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useStore();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
@@ -43,13 +43,19 @@ export default function LoginPage() {
         return;
       }
 
-      const loginResult = login(email, password);
+      const { error } = await signIn(email, password);
       
-      if (loginResult.success) {
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Invalid email or password');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Please confirm your email address before signing in');
+        } else {
+          toast.error(error.message);
+        }
+      } else {
         toast.success('Welcome back!');
         navigate('/');
-      } else {
-        toast.error(loginResult.error || 'Invalid email or password');
       }
     } catch (error) {
       toast.error('An error occurred. Please try again.');

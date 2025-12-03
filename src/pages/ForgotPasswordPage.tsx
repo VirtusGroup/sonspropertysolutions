@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { z } from 'zod';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, Mail, Send, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import sonsLogo from '@/assets/sons-logo.png';
 
 const emailSchema = z.object({
@@ -15,6 +17,7 @@ const emailSchema = z.object({
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
+  const { resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -34,10 +37,13 @@ export default function ForgotPasswordPage() {
         return;
       }
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const { error: resetError } = await resetPassword(email);
       
-      setIsSubmitted(true);
+      if (resetError) {
+        toast.error(resetError.message);
+      } else {
+        setIsSubmitted(true);
+      }
     } catch (err) {
       setError('An error occurred. Please try again.');
     } finally {

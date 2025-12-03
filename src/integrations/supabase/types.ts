@@ -14,13 +14,243 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      addresses: {
+        Row: {
+          city: string
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          label: string
+          property_type: string
+          state: string
+          street: string
+          unit: string | null
+          user_id: string
+          zip: string
+        }
+        Insert: {
+          city: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          label: string
+          property_type: string
+          state: string
+          street: string
+          unit?: string | null
+          user_id: string
+          zip: string
+        }
+        Update: {
+          city?: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          label?: string
+          property_type?: string
+          state?: string
+          street?: string
+          unit?: string | null
+          user_id?: string
+          zip?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          order_id: string | null
+          read: boolean | null
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          order_id?: string | null
+          read?: boolean | null
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          order_id?: string | null
+          read?: boolean | null
+          title?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_photos: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          id: string
+          order_id: string
+          storage_path: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          id?: string
+          order_id: string
+          storage_path: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          id?: string
+          order_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_photos_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address_id: string | null
+          address_snapshot: Json | null
+          completed_at: string | null
+          contact_email: string
+          contact_first_name: string
+          contact_last_name: string
+          contact_phone: string
+          created_at: string | null
+          estimate_high: number | null
+          estimate_low: number | null
+          id: string
+          job_ref: string | null
+          notes: string | null
+          preferred_window: string | null
+          property_type: string
+          scheduled_at: string | null
+          service_id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          address_id?: string | null
+          address_snapshot?: Json | null
+          completed_at?: string | null
+          contact_email: string
+          contact_first_name: string
+          contact_last_name: string
+          contact_phone: string
+          created_at?: string | null
+          estimate_high?: number | null
+          estimate_low?: number | null
+          id?: string
+          job_ref?: string | null
+          notes?: string | null
+          preferred_window?: string | null
+          property_type: string
+          scheduled_at?: string | null
+          service_id: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          address_id?: string | null
+          address_snapshot?: Json | null
+          completed_at?: string | null
+          contact_email?: string
+          contact_first_name?: string
+          contact_last_name?: string
+          contact_phone?: string
+          created_at?: string | null
+          estimate_high?: number | null
+          estimate_low?: number | null
+          id?: string
+          job_ref?: string | null
+          notes?: string | null
+          preferred_window?: string | null
+          property_type?: string
+          scheduled_at?: string | null
+          service_id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_address_id_fkey"
+            columns: ["address_id"]
+            isOneToOne: false
+            referencedRelation: "addresses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          credits: number | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          notification_email: boolean | null
+          notification_push: boolean | null
+          phone: string | null
+          referral_code: string | null
+          terms_accepted_at: string | null
+          tier: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          credits?: number | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          notification_email?: boolean | null
+          notification_push?: boolean | null
+          phone?: string | null
+          referral_code?: string | null
+          terms_accepted_at?: string | null
+          tier?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          credits?: number | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          notification_email?: boolean | null
+          notification_push?: boolean | null
+          phone?: string | null
+          referral_code?: string | null
+          terms_accepted_at?: string | null
+          tier?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_referral_code: { Args: { first_name: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
