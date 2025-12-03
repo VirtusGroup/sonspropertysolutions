@@ -35,8 +35,8 @@ interface BookingState {
 const STEPS = [
   { id: 1, title: 'Service', icon: Wrench },
   { id: 2, title: 'Address', icon: MapPin },
-  { id: 3, title: 'Schedule', icon: Calendar },
-  { id: 4, title: 'Details', icon: Camera },
+  { id: 3, title: 'Details', icon: Camera },
+  { id: 4, title: 'Schedule', icon: Calendar },
   { id: 5, title: 'Review', icon: FileText },
 ];
 
@@ -49,7 +49,7 @@ const TIME_WINDOWS = [
 export default function BookingPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, services, addOrder } = useStore();
+  const { currentUser, services, addOrder, addAddress } = useStore();
   const bookingState = location.state as BookingState | null;
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -60,6 +60,7 @@ export default function BookingPage() {
   const [timeWindow, setTimeWindow] = useState('morning');
   const [notes, setNotes] = useState('');
   const [isFlexible, setIsFlexible] = useState(false);
+  const [saveNewAddress, setSaveNewAddress] = useState(true);
 
   const service = bookingState ? services.find(s => s.id === bookingState.serviceId) : null;
 
@@ -84,14 +85,30 @@ export default function BookingPage() {
     switch (currentStep) {
       case 1: return true;
       case 2: return selectedAddress || (useNewAddress && newAddress.street && newAddress.city && newAddress.zip);
-      case 3: return preferredDate && timeWindow;
-      case 4: return true;
+      case 3: return true; // Details step (optional)
+      case 4: return preferredDate && timeWindow; // Schedule step (required)
       case 5: return true;
       default: return false;
     }
   };
 
   const handleNext = () => {
+    // Save new address when leaving Address step (step 2)
+    if (currentStep === 2 && useNewAddress && saveNewAddress && newAddress.street && newAddress.city && newAddress.zip) {
+      const newAddressId = `addr-${Date.now()}`;
+      addAddress({
+        id: newAddressId,
+        label: 'Home',
+        street: newAddress.street,
+        city: newAddress.city,
+        state: newAddress.state || 'TX',
+        zip: newAddress.zip,
+        isDefault: !currentUser?.addresses?.length,
+      });
+      setSelectedAddress(newAddressId);
+      setUseNewAddress(false);
+    }
+    
     if (currentStep < 5 && canProceed()) {
       setCurrentStep(currentStep + 1);
     }
@@ -335,6 +352,16 @@ export default function BookingPage() {
                             placeholder="76109"
                           />
                         </div>
+                        <div className="flex items-center space-x-2 pt-2">
+                          <Checkbox
+                            id="saveAddress"
+                            checked={saveNewAddress}
+                            onCheckedChange={(checked) => setSaveNewAddress(checked as boolean)}
+                          />
+                          <Label htmlFor="saveAddress" className="text-sm text-muted-foreground">
+                            Save this address for future bookings
+                          </Label>
+                        </div>
                       </div>
                     )}
                   </CardContent>
@@ -342,8 +369,44 @@ export default function BookingPage() {
               </div>
             )}
 
-            {/* Step 3: Schedule */}
+            {/* Step 3: Details (Photos & Notes) */}
             {currentStep === 3 && (
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Photos (Optional)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                      <Camera className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Photo upload coming soon
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        For now, describe any issues in the notes below
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Special Instructions</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Include your roof type, material, & how many stories. Also, include things like gate code, parking instructions, etc."
+                      rows={4}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Step 4: Schedule */}
+            {currentStep === 4 && (
               <div className="space-y-4">
                 <Card>
                   <CardHeader className="pb-2">
@@ -389,42 +452,6 @@ export default function BookingPage() {
                     I'm flexible with my schedule for earlier availability
                   </Label>
                 </div>
-              </div>
-            )}
-
-            {/* Step 4: Photos & Notes */}
-            {currentStep === 4 && (
-              <div className="space-y-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Photos (Optional)</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                      <Camera className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        Photo upload coming soon
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        For now, describe any issues in the notes below
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Special Instructions</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Gate code, parking instructions, specific areas of concern, etc."
-                      rows={4}
-                    />
-                  </CardContent>
-                </Card>
               </div>
             )}
 
