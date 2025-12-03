@@ -16,10 +16,10 @@ import { ServiceCategory } from '@/types';
 
 const categories: { value: ServiceCategory | 'all'; label: string }[] = [
   { value: 'all', label: 'All Services' },
-  { value: 'roofing', label: 'Roofing' },
-  { value: 'gutters', label: 'Gutters' },
-  { value: 'maintenance', label: 'Maintenance' },
-  { value: 'storm', label: 'Storm Response' },
+  { value: 'roofing', label: 'Roof Inspections' },
+  { value: 'gutters', label: 'Gutters & Drainage' },
+  { value: 'maintenance', label: 'Repair & Maintenance' },
+  { value: 'storm', label: 'Emergency Services' },
 ];
 
 export default function ServicesPage() {
