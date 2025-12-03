@@ -23,12 +23,11 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
-  const { promos, orders, currentUser, notifications } = useStore();
+  const { orders, currentUser, notifications } = useStore();
   const [hoursModalOpen, setHoursModalOpen] = useState(false);
   const [areaModalOpen, setAreaModalOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  const activePromo = promos.find((p) => p.active);
   const userOrders = orders.filter((o) => o.userId === currentUser?.id);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -157,8 +156,6 @@ export default function HomePage() {
           </motion.div>
         </main>
       </div>
-
-      {/* Promotional Banner - Hidden for now */}
 
       {/* Modals & Drawers */}
       <BusinessHoursModal

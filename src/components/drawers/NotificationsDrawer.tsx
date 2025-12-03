@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useStore } from '@/store/useStore';
-import { Bell, ClipboardList, Gift, Info, CheckCheck, BellOff } from 'lucide-react';
+import { Bell, ClipboardList, Info, CheckCheck, BellOff } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Notification } from '@/types';
 
@@ -22,7 +22,6 @@ interface NotificationsDrawerProps {
 
 const typeConfig: Record<Notification['type'], { label: string; icon: typeof Bell; color: string }> = {
   order: { label: 'Order Updates', icon: ClipboardList, color: 'text-primary' },
-  promo: { label: 'Promotions', icon: Gift, color: 'text-amber-500' },
   system: { label: 'System', icon: Info, color: 'text-muted-foreground' },
 };
 
@@ -96,7 +95,7 @@ export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerP
               </div>
               <h3 className="font-medium text-foreground mb-1">No notifications yet</h3>
               <p className="text-sm text-muted-foreground max-w-[200px] mx-auto">
-                When you have updates about your orders or promotions, they'll appear here
+                When you have updates about your orders, they'll appear here
               </p>
             </motion.div>
           ) : (

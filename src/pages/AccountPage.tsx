@@ -11,7 +11,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   User,
   MapPin,
-  CreditCard,
   Gift,
   Bell,
   LogOut,
@@ -342,31 +341,6 @@ export default function AccountPage() {
                     onCheckedChange={(checked) => updateNotificationPreferences({ email: checked })}
                   />
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Payment */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  <CardTitle>Payment Methods</CardTitle>
-                </div>
-                <CardDescription>
-                  Payment at time of service (demo app)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" disabled className="w-full">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Payment Method (Demo)
-                </Button>
               </CardContent>
             </Card>
           </motion.div>

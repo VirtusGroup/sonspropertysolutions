@@ -29,10 +29,6 @@ const faqs = [
     question: 'How do you calculate estimates?',
     answer: 'Our estimates are based on the specific service, property size, materials needed, and labor required. All estimates include a range to account for unexpected factors discovered during inspection.',
   },
-  {
-    question: 'What payment methods do you accept?',
-    answer: 'We accept all major credit cards, checks, and cash. Payment is typically due upon completion of service unless other arrangements have been made.',
-  },
 ];
 
 export default function SupportPage() {
