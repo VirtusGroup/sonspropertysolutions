@@ -65,8 +65,8 @@ export default function HomePage() {
         </motion.div>
 
         {/* Dashboard Grid */}
-        <main className="flex-1 min-h-0 p-2 pb-2 overflow-hidden grid grid-rows-[auto_1fr]">
-          {/* Icon Tiles - Fixed at top */}
+        <main className="flex-1 min-h-0 p-2 pb-2 overflow-hidden">
+          {/* Icon Tiles */}
           <div className="grid grid-cols-4 gap-1.5">
             {/* Primary Actions - Accent colored */}
             <DashboardTile
@@ -143,20 +143,18 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Popular Services Section - Centered in remaining space */}
-          <div className="flex items-center justify-center">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
-              className="w-full"
-            >
-              <h3 className="text-sm font-semibold text-foreground mb-2">
-                Popular Services
-              </h3>
-              <PopularServicesGrid />
-            </motion.div>
-          </div>
+          {/* Popular Services Section */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
+            className="pt-4"
+          >
+            <h3 className="text-sm font-semibold text-foreground mb-2">
+              Popular Services
+            </h3>
+            <PopularServicesGrid />
+          </motion.div>
         </main>
       </div>
 
