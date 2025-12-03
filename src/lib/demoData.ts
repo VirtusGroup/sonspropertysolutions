@@ -27,6 +27,7 @@ export const demoServices: Service[] = [
       { id: 'addon-1', title: 'Downspout Flush', price: 50, description: 'Deep clean all downspouts' },
       { id: 'addon-2', title: 'Debris Haul-Away', price: 35, description: 'Remove all debris from property' },
     ],
+    applicableTo: 'both',
   },
   {
     id: 'svc-2',
@@ -44,6 +45,7 @@ export const demoServices: Service[] = [
       { id: 'addon-3', title: 'Drone Inspection', price: 100, description: 'Aerial photography and analysis' },
       { id: 'addon-4', title: 'Thermal Imaging', price: 150, description: 'Detect hidden moisture issues' },
     ],
+    applicableTo: 'both',
   },
   {
     id: 'svc-3',
@@ -60,6 +62,7 @@ export const demoServices: Service[] = [
     addons: [
       { id: 'addon-5', title: 'Extended Warranty', price: 75, description: '3-year coverage on repairs' },
     ],
+    applicableTo: 'both',
   },
   {
     id: 'svc-4',
@@ -76,6 +79,7 @@ export const demoServices: Service[] = [
     addons: [
       { id: 'addon-6', title: 'After-Hours Service', price: 150, description: 'Evening/weekend priority response' },
     ],
+    applicableTo: 'both',
   },
   {
     id: 'svc-5',
@@ -90,6 +94,7 @@ export const demoServices: Service[] = [
     inclusions: ['Old sealant removal', 'Professional-grade sealant', 'Frame inspection', '2-year warranty'],
     exclusions: ['Skylight replacement', 'Frame repair', 'Interior painting'],
     addons: [],
+    applicableTo: 'residential',
   },
   {
     id: 'svc-6',
@@ -106,6 +111,7 @@ export const demoServices: Service[] = [
     addons: [
       { id: 'addon-7', title: 'Heated Gutter System', price: 500, description: 'Prevent ice dams and clogs' },
     ],
+    applicableTo: 'both',
   },
   {
     id: 'svc-7',
@@ -120,6 +126,7 @@ export const demoServices: Service[] = [
     inclusions: ['Complete inspection', 'Minor repairs', 'Sealant touch-up', 'Gutter check', 'Photo report'],
     exclusions: ['Major repairs', 'Material replacement', 'Structural work'],
     addons: [],
+    applicableTo: 'both',
   },
   {
     id: 'svc-8',
@@ -134,6 +141,7 @@ export const demoServices: Service[] = [
     inclusions: ['Old flashing removal', 'New metal flashing', 'Professional sealing', '2-year warranty'],
     exclusions: ['Chimney repair', 'Masonry work', 'Cap replacement'],
     addons: [],
+    applicableTo: 'residential',
   },
   {
     id: 'svc-9',
@@ -150,6 +158,7 @@ export const demoServices: Service[] = [
     addons: [
       { id: 'addon-8', title: 'Solar Attic Fan', price: 300, description: 'Energy-efficient ventilation' },
     ],
+    applicableTo: 'both',
   },
   {
     id: 'svc-10',
@@ -164,25 +173,18 @@ export const demoServices: Service[] = [
     inclusions: ['Extension pipe', 'Professional installation', 'Splash block', 'Grading assessment'],
     exclusions: ['Landscaping', 'French drains', 'Foundation waterproofing'],
     addons: [],
+    applicableTo: 'both',
   },
 ];
 
 export const demoUsers: User[] = [
   {
-    id: 'user-1',
-    name: 'Guest User',
-    email: 'guest@example.com',
-    phone: '',
-    addresses: [],
-    referralCode: 'GUEST123',
-    credits: 0,
-    tier: 'guest',
-  },
-  {
     id: 'user-2',
-    name: 'Sarah Johnson',
+    firstName: 'Sarah',
+    lastName: 'Johnson',
     email: 'sarah.johnson@example.com',
     phone: '(214) 555-0123',
+    password: 'password123',
     addresses: [
       {
         id: 'addr-1',
@@ -192,6 +194,7 @@ export const demoUsers: User[] = [
         city: 'Dallas',
         state: 'TX',
         zip: '75201',
+        propertyType: 'residential',
         isDefault: true,
       },
       {
@@ -202,18 +205,26 @@ export const demoUsers: User[] = [
         city: 'Fort Worth',
         state: 'TX',
         zip: '76102',
+        propertyType: 'residential',
         isDefault: false,
       },
     ],
     referralCode: 'SARAH2024',
     credits: 25,
     tier: 'regular',
+    notificationPreferences: {
+      push: true,
+      email: true,
+    },
+    termsAcceptedAt: '2024-01-15T10:00:00Z',
   },
   {
     id: 'user-3',
-    name: 'Michael Chen',
+    firstName: 'Michael',
+    lastName: 'Chen',
     email: 'michael.chen@example.com',
     phone: '(817) 555-0456',
+    password: 'password123',
     addresses: [
       {
         id: 'addr-3',
@@ -222,28 +233,51 @@ export const demoUsers: User[] = [
         city: 'Arlington',
         state: 'TX',
         zip: '76015',
+        propertyType: 'residential',
         isDefault: true,
+      },
+      {
+        id: 'addr-4',
+        label: 'Office Building',
+        street: '500 Commerce Street',
+        unit: 'Suite 100',
+        city: 'Fort Worth',
+        state: 'TX',
+        zip: '76102',
+        propertyType: 'commercial',
+        isDefault: false,
       },
     ],
     referralCode: 'MIKE2024',
     credits: 150,
     tier: 'vip',
+    notificationPreferences: {
+      push: true,
+      email: false,
+    },
+    termsAcceptedAt: '2023-11-20T14:30:00Z',
   },
 ];
 
 export const demoOrders: Order[] = [
   {
     id: 'ord-1',
+    jobRef: 'SR-10001',
     userId: 'user-2',
     serviceId: 'svc-1',
     addonIds: ['addon-1'],
     addressId: 'addr-1',
+    propertyType: 'residential',
+    contactFirstName: 'Sarah',
+    contactLastName: 'Johnson',
+    contactEmail: 'sarah.johnson@example.com',
+    contactPhone: '(214) 555-0123',
     photos: [],
     preferredWindow: 'Next Tuesday, 8am-12pm',
     notes: 'Please call before arriving. Dog in backyard.',
     estimateLow: 180,
     estimateHigh: 220,
-    status: 'completed',
+    status: 'finished',
     createdAt: '2024-10-15T10:30:00Z',
     scheduledAt: '2024-10-20T08:00:00Z',
     completedAt: '2024-10-20T10:45:00Z',
@@ -251,10 +285,16 @@ export const demoOrders: Order[] = [
   },
   {
     id: 'ord-2',
+    jobRef: 'SR-10002',
     userId: 'user-2',
     serviceId: 'svc-7',
     addonIds: [],
     addressId: 'addr-1',
+    propertyType: 'residential',
+    contactFirstName: 'Sarah',
+    contactLastName: 'Johnson',
+    contactEmail: 'sarah.johnson@example.com',
+    contactPhone: '(214) 555-0123',
     photos: [],
     preferredWindow: 'ASAP',
     notes: '',
@@ -266,26 +306,38 @@ export const demoOrders: Order[] = [
   },
   {
     id: 'ord-3',
+    jobRef: 'SR-10003',
     userId: 'user-3',
     serviceId: 'svc-3',
     addonIds: ['addon-5'],
     addressId: 'addr-3',
+    propertyType: 'residential',
+    contactFirstName: 'Michael',
+    contactLastName: 'Chen',
+    contactEmail: 'michael.chen@example.com',
+    contactPhone: '(817) 555-0456',
     photos: [],
     preferredWindow: 'This week, any day',
     notes: 'Small leak above living room. Photos attached.',
     estimateLow: 400,
     estimateHigh: 475,
-    status: 'on-site',
+    status: 'in_progress',
     createdAt: '2024-11-03T09:15:00Z',
     scheduledAt: '2024-11-05T13:00:00Z',
     quantity: 15,
   },
   {
     id: 'ord-4',
+    jobRef: 'SR-10004',
     userId: 'user-3',
     serviceId: 'svc-2',
     addonIds: ['addon-3'],
     addressId: 'addr-3',
+    propertyType: 'residential',
+    contactFirstName: 'Michael',
+    contactLastName: 'Chen',
+    contactEmail: 'michael.chen@example.com',
+    contactPhone: '(817) 555-0456',
     photos: [],
     preferredWindow: 'November 12, morning',
     notes: 'Annual inspection',

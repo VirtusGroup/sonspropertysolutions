@@ -57,46 +57,48 @@ export function MobileShell({ children }: MobileShellProps) {
             <span className="font-semibold text-lg">Sons Property Solutions</span>
           </Link>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="px-2 py-1.5 text-sm font-medium">Dev Menu</div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={resetDemoData}>
-                Reset Demo Data
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                Impersonate User
-              </div>
-              {demoUsers.map((user) => (
-                <DropdownMenuItem
-                  key={user.id}
-                  onClick={() => impersonateUser(user.id)}
-                  className={cn(
-                    currentUser?.id === user.id && 'bg-accent'
-                  )}
-                >
-                  {user.name} ({user.tier})
+          {import.meta.env.DEV && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-1.5 text-sm font-medium">Dev Menu</div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={resetDemoData}>
+                  Reset Demo Data
                 </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={togglePromos}>
-                Toggle Promotions
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/support">Support</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/install">PWA Install</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  Impersonate User
+                </div>
+                {demoUsers.map((user) => (
+                  <DropdownMenuItem
+                    key={user.id}
+                    onClick={() => impersonateUser(user.id)}
+                    className={cn(
+                      currentUser?.id === user.id && 'bg-accent'
+                    )}
+                  >
+                    {user.firstName} {user.lastName} ({user.tier})
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={togglePromos}>
+                  Toggle Promotions
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/support">Support</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/install">PWA Install</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </motion.header>
 

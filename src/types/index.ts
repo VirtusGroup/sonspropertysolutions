@@ -1,12 +1,21 @@
+export type PropertyType = 'residential' | 'commercial';
+
 export interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
+  password?: string;
   addresses: Address[];
   referralCode: string;
   credits: number;
-  tier: 'guest' | 'regular' | 'vip';
+  tier: 'regular' | 'vip';
+  notificationPreferences?: {
+    push: boolean;
+    email: boolean;
+  };
+  termsAcceptedAt?: string;
 }
 
 export interface Address {
@@ -17,10 +26,13 @@ export interface Address {
   city: string;
   state: string;
   zip: string;
+  propertyType: PropertyType;
   isDefault: boolean;
 }
 
 export type ServiceCategory = 'roofing' | 'gutters' | 'maintenance' | 'storm';
+
+export type ServiceApplicability = 'residential' | 'commercial' | 'both';
 
 export interface Service {
   id: string;
@@ -35,6 +47,7 @@ export interface Service {
   inclusions: string[];
   exclusions: string[];
   addons: Addon[];
+  applicableTo: ServiceApplicability;
 }
 
 export interface Addon {
@@ -44,14 +57,26 @@ export interface Addon {
   description: string;
 }
 
-export type OrderStatus = 'received' | 'scheduled' | 'on-site' | 'completed' | 'cancelled';
+export type OrderStatus = 
+  | 'received' 
+  | 'scheduled' 
+  | 'in_progress' 
+  | 'job_complete' 
+  | 'finished' 
+  | 'cancelled';
 
 export interface Order {
   id: string;
+  jobRef: string;
   userId: string;
   serviceId: string;
   addonIds: string[];
   addressId: string;
+  propertyType: PropertyType;
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
   photos: Photo[];
   preferredWindow: string;
   notes: string;

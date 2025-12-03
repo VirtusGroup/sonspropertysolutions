@@ -1,7 +1,6 @@
 import { OrderStatus } from '@/types';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Clock, Truck, Package } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { CheckCircle2, Clock, Truck, Package, XCircle, Flag } from 'lucide-react';
 
 interface StatusBadgeProps {
   status: OrderStatus;
@@ -21,20 +20,25 @@ const statusConfig: Record<
     variant: 'default',
     icon: Clock,
   },
-  'on-site': {
-    label: 'On-Site',
+  in_progress: {
+    label: 'Job In Progress',
     variant: 'default',
     icon: Truck,
   },
-  completed: {
-    label: 'Completed',
-    variant: 'outline',
+  job_complete: {
+    label: 'Job Complete',
+    variant: 'default',
     icon: CheckCircle2,
+  },
+  finished: {
+    label: 'Finished',
+    variant: 'outline',
+    icon: Flag,
   },
   cancelled: {
     label: 'Cancelled',
     variant: 'destructive',
-    icon: Package,
+    icon: XCircle,
   },
 };
 
