@@ -147,12 +147,14 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.4 }}
-            className="flex-1 flex flex-col justify-center"
+            className="flex-1 flex items-center"
           >
-            <h3 className="text-sm font-semibold text-foreground mb-2 px-2">
-              Popular Services
-            </h3>
-            <PopularServicesGrid />
+            <div className="w-full">
+              <h3 className="text-sm font-semibold text-foreground mb-2 px-2">
+                Popular Services
+              </h3>
+              <PopularServicesGrid />
+            </div>
           </motion.div>
         </main>
       </div>
