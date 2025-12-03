@@ -1,18 +1,8 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Briefcase, ClipboardList, User, Menu } from 'lucide-react';
+import { Home, Briefcase, ClipboardList, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useStore } from '@/store/useStore';
-import { demoUsers } from '@/lib/demoData';
 import sonsLogo from '@/assets/sons-logo.png';
 
 interface MobileShellProps {
@@ -28,7 +18,6 @@ const tabs = [
 
 export function MobileShell({ children }: MobileShellProps) {
   const location = useLocation();
-  const { resetDemoData, impersonateUser, togglePromos, currentUser } = useStore();
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -37,7 +26,7 @@ export function MobileShell({ children }: MobileShellProps) {
 
   return (
     <div className="flex flex-col min-h-screen w-full max-w-md mx-auto bg-background shadow-xl">
-      {/* Header with subtle glass effect */}
+      {/* Header */}
       <motion.header 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -56,49 +45,6 @@ export function MobileShell({ children }: MobileShellProps) {
             />
             <span className="font-semibold text-lg">Sons Property Solutions</span>
           </Link>
-
-          {import.meta.env.DEV && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <div className="px-2 py-1.5 text-sm font-medium">Dev Menu</div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={resetDemoData}>
-                  Reset Demo Data
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                  Impersonate User
-                </div>
-                {demoUsers.map((user) => (
-                  <DropdownMenuItem
-                    key={user.id}
-                    onClick={() => impersonateUser(user.id)}
-                    className={cn(
-                      currentUser?.id === user.id && 'bg-accent'
-                    )}
-                  >
-                    {user.firstName} {user.lastName} ({user.tier})
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={togglePromos}>
-                  Toggle Promotions
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/support">Support</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/install">PWA Install</Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
       </motion.header>
 

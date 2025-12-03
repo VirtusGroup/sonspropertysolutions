@@ -38,7 +38,7 @@ const statusLabels: Record<OrderStatus, string> = {
 export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { orders, services, currentUser, advanceOrderStatus } = useStore();
+  const { orders, services, currentUser } = useStore();
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
 
   const order = orders.find((o) => o.id === id);
@@ -184,17 +184,6 @@ export default function OrderDetailPage() {
                   })}
                 </div>
 
-                {/* Dev: Advance Status Button */}
-                {import.meta.env.DEV && order.status !== 'finished' && order.status !== 'cancelled' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full mt-4"
-                    onClick={() => advanceOrderStatus(order.id)}
-                  >
-                    [Dev] Advance to Next Status
-                  </Button>
-                )}
               </CardContent>
             </Card>
           </motion.div>

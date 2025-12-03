@@ -1,13 +1,16 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, Service, Order, Address, Promo, Notification } from '@/types';
-import { demoServices, demoUsers, demoOrders, demoPromos, demoNotifications } from '@/lib/demoData';
+import { User, Service, Order, Address, Notification } from '@/types';
+import { demoServices } from '@/lib/demoData';
 
 interface AppState {
   // User
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
   updateUser: (updates: Partial<User>) => void;
+  
+  // Registered Users (persisted)
+  registeredUsers: User[];
   
   // Auth
   login: (email: string, password: string) => { success: boolean; error?: string };
@@ -31,23 +34,15 @@ interface AppState {
   updateAddress: (addressId: string, updates: Partial<Address>) => void;
   deleteAddress: (addressId: string) => void;
   
-  // Promos
-  promos: Promo[];
-  togglePromos: () => void;
-  
   // Notifications
   notifications: Notification[];
+  addNotification: (notification: Notification) => void;
   markNotificationRead: (notificationId: string) => void;
   markAllNotificationsRead: () => void;
   unreadNotificationsCount: number;
   
   // Notification Preferences
   updateNotificationPreferences: (preferences: { push?: boolean; email?: boolean }) => void;
-  
-  // Dev helpers
-  resetDemoData: () => void;
-  impersonateUser: (userId: string) => void;
-  advanceOrderStatus: (orderId: string) => void;
 }
 
 const generateReferralCode = (firstName: string) => {
@@ -59,19 +54,31 @@ export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
       currentUser: null,
+      registeredUsers: [],
       
       setCurrentUser: (user) => set({ currentUser: user }),
       
       updateUser: (updates) =>
-        set((state) => ({
-          currentUser: state.currentUser
-            ? { ...state.currentUser, ...updates }
-            : null,
-        })),
+        set((state) => {
+          if (!state.currentUser) return state;
+          
+          const updatedUser = { ...state.currentUser, ...updates };
+          
+          // Also update in registeredUsers
+          const updatedRegisteredUsers = state.registeredUsers.map((u) =>
+            u.id === updatedUser.id ? updatedUser : u
+          );
+          
+          return {
+            currentUser: updatedUser,
+            registeredUsers: updatedRegisteredUsers,
+          };
+        }),
       
       // Auth functions
       login: (email, password) => {
-        const user = demoUsers.find(
+        const { registeredUsers } = get();
+        const user = registeredUsers.find(
           (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
         );
         if (user) {
@@ -84,7 +91,8 @@ export const useStore = create<AppState>()(
       logout: () => set({ currentUser: null }),
       
       registerUser: (userData) => {
-        const existingUser = demoUsers.find(
+        const { registeredUsers } = get();
+        const existingUser = registeredUsers.find(
           (u) => u.email.toLowerCase() === userData.email.toLowerCase()
         );
         if (existingUser) {
@@ -106,8 +114,10 @@ export const useStore = create<AppState>()(
           termsAcceptedAt: userData.termsAcceptedAt,
         };
         
-        demoUsers.push(newUser);
-        set({ currentUser: newUser });
+        set((state) => ({
+          registeredUsers: [...state.registeredUsers, newUser],
+          currentUser: newUser,
+        }));
         return { success: true };
       },
       
@@ -122,7 +132,7 @@ export const useStore = create<AppState>()(
       
       services: demoServices,
       
-      orders: demoOrders,
+      orders: [],
       
       addOrder: (order) =>
         set((state) => ({
@@ -149,11 +159,19 @@ export const useStore = create<AppState>()(
             ? state.currentUser.addresses.map((a) => ({ ...a, isDefault: false }))
             : state.currentUser.addresses;
           
+          const updatedUser = {
+            ...state.currentUser,
+            addresses: [...updatedAddresses, addressToAdd],
+          };
+          
+          // Also update in registeredUsers
+          const updatedRegisteredUsers = state.registeredUsers.map((u) =>
+            u.id === updatedUser.id ? updatedUser : u
+          );
+          
           return {
-            currentUser: {
-              ...state.currentUser,
-              addresses: [...updatedAddresses, addressToAdd],
-            },
+            currentUser: updatedUser,
+            registeredUsers: updatedRegisteredUsers,
           };
         }),
       
@@ -171,11 +189,19 @@ export const useStore = create<AppState>()(
             );
           }
           
+          const updatedUser = {
+            ...state.currentUser,
+            addresses: updatedAddresses,
+          };
+          
+          // Also update in registeredUsers
+          const updatedRegisteredUsers = state.registeredUsers.map((u) =>
+            u.id === updatedUser.id ? updatedUser : u
+          );
+          
           return {
-            currentUser: {
-              ...state.currentUser,
-              addresses: updatedAddresses,
-            },
+            currentUser: updatedUser,
+            registeredUsers: updatedRegisteredUsers,
           };
         }),
       
@@ -192,22 +218,29 @@ export const useStore = create<AppState>()(
             filtered[0].isDefault = true;
           }
           
+          const updatedUser = {
+            ...state.currentUser,
+            addresses: filtered,
+          };
+          
+          // Also update in registeredUsers
+          const updatedRegisteredUsers = state.registeredUsers.map((u) =>
+            u.id === updatedUser.id ? updatedUser : u
+          );
+          
           return {
-            currentUser: {
-              ...state.currentUser,
-              addresses: filtered,
-            },
+            currentUser: updatedUser,
+            registeredUsers: updatedRegisteredUsers,
           };
         }),
       
-      promos: demoPromos,
+      notifications: [],
       
-      togglePromos: () =>
+      addNotification: (notification) =>
         set((state) => ({
-          promos: state.promos.map((p) => ({ ...p, active: !p.active })),
+          notifications: [notification, ...state.notifications],
+          unreadNotificationsCount: state.unreadNotificationsCount + 1,
         })),
-      
-      notifications: demoNotifications,
       
       markNotificationRead: (notificationId) =>
         set((state) => ({
@@ -225,66 +258,28 @@ export const useStore = create<AppState>()(
           unreadNotificationsCount: 0,
         })),
       
-      unreadNotificationsCount: demoNotifications.filter((n) => !n.read).length,
+      unreadNotificationsCount: 0,
       
       updateNotificationPreferences: (preferences) =>
         set((state) => {
           if (!state.currentUser) return state;
-          return {
-            currentUser: {
-              ...state.currentUser,
-              notificationPreferences: {
-                ...state.currentUser.notificationPreferences,
-                ...preferences,
-              },
+          
+          const updatedUser = {
+            ...state.currentUser,
+            notificationPreferences: {
+              ...state.currentUser.notificationPreferences,
+              ...preferences,
             },
           };
-        }),
-      
-      resetDemoData: () =>
-        set({
-          currentUser: null,
-          services: demoServices,
-          orders: demoOrders,
-          promos: demoPromos,
-          notifications: demoNotifications,
-          unreadNotificationsCount: demoNotifications.filter((n) => !n.read).length,
-          nextJobNumber: 10001,
-        }),
-      
-      impersonateUser: (userId) => {
-        const user = demoUsers.find((u) => u.id === userId);
-        if (user) {
-          set({ currentUser: user });
-        }
-      },
-      
-      advanceOrderStatus: (orderId) =>
-        set((state) => {
-          const statusProgression: Record<string, string> = {
-            received: 'scheduled',
-            scheduled: 'in_progress',
-            in_progress: 'job_complete',
-            job_complete: 'finished',
-          };
+          
+          // Also update in registeredUsers
+          const updatedRegisteredUsers = state.registeredUsers.map((u) =>
+            u.id === updatedUser.id ? updatedUser : u
+          );
           
           return {
-            orders: state.orders.map((order) => {
-              if (order.id !== orderId) return order;
-              
-              const nextStatus = statusProgression[order.status];
-              if (!nextStatus) return order;
-              
-              const updates: Partial<Order> = { status: nextStatus as any };
-              
-              if (nextStatus === 'scheduled') {
-                updates.scheduledAt = new Date().toISOString();
-              } else if (nextStatus === 'finished') {
-                updates.completedAt = new Date().toISOString();
-              }
-              
-              return { ...order, ...updates };
-            }),
+            currentUser: updatedUser,
+            registeredUsers: updatedRegisteredUsers,
           };
         }),
     }),
@@ -292,8 +287,8 @@ export const useStore = create<AppState>()(
       name: 'sons-property-app',
       partialize: (state) => ({
         currentUser: state.currentUser,
+        registeredUsers: state.registeredUsers,
         orders: state.orders,
-        promos: state.promos,
         notifications: state.notifications,
         nextJobNumber: state.nextJobNumber,
       }),

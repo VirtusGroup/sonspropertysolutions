@@ -97,15 +97,6 @@ export interface Photo {
   caption?: string;
 }
 
-export interface Promo {
-  id: string;
-  code: string;
-  title: string;
-  description: string;
-  discount: number;
-  active: boolean;
-}
-
 export interface Notification {
   id: string;
   title: string;
@@ -113,7 +104,7 @@ export interface Notification {
   timestamp: string;
   read: boolean;
   orderId?: string;
-  type: 'order' | 'promo' | 'system';
+  type: 'order' | 'system';
 }
 
 export interface EstimateInput {
