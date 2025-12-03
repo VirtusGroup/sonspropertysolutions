@@ -1,11 +1,13 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { MobileShell } from "@/components/layout/MobileShell";
 import { PageTransition } from "@/components/PageTransition";
+import { useStore } from "@/store/useStore";
 import HomePage from "./pages/HomePage";
 import ServicesPage from "./pages/ServicesPage";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
@@ -22,6 +24,29 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+const authRoutes = ['/login', '/register', '/forgot-password'];
+
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { currentUser } = useStore();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isAuthPage = authRoutes.includes(location.pathname);
+
+  useEffect(() => {
+    // If not logged in and not on auth page, redirect to login
+    if (!currentUser && !isAuthPage) {
+      navigate('/login', { replace: true });
+    }
+    // If logged in and on auth page, redirect to home
+    if (currentUser && isAuthPage) {
+      navigate('/', { replace: true });
+    }
+  }, [currentUser, isAuthPage, navigate]);
+
+  return <>{children}</>;
+}
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -55,7 +80,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <MobileShell>
-          <AnimatedRoutes />
+          <AuthGuard>
+            <AnimatedRoutes />
+          </AuthGuard>
         </MobileShell>
       </BrowserRouter>
     </TooltipProvider>
