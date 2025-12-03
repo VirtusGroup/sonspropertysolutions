@@ -33,7 +33,7 @@ export default function HomePage() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="flex flex-col h-full bg-background relative overflow-hidden">
+    <div className="flex flex-col flex-1 min-h-0 bg-background relative overflow-hidden">
       {/* Background Image */}
       <motion.div 
         initial={{ opacity: 0 }}
@@ -48,7 +48,7 @@ export default function HomePage() {
       />
       
       {/* Content */}
-      <div className="relative z-10 flex flex-col h-full">
+      <div className="relative z-10 flex flex-col flex-1 min-h-0">
         {/* Brand Subheader */}
         <motion.div 
           initial={{ opacity: 0 }}
@@ -65,7 +65,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Dashboard Grid */}
-        <main className="flex-1 p-2 pb-2 overflow-hidden flex flex-col">
+        <main className="flex-1 min-h-0 p-2 pb-2 overflow-hidden flex flex-col">
           <div className="grid grid-cols-4 gap-1.5 auto-rows-fr">
             {/* Primary Actions - Accent colored */}
             <DashboardTile
