@@ -6,6 +6,7 @@ interface Profile {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  email: string | null;
   phone: string | null;
   referral_code: string | null;
   credits: number;
@@ -14,6 +15,7 @@ interface Profile {
   notification_email: boolean;
   terms_accepted_at: string | null;
   created_at: string;
+  updated_at: string | null;
 }
 
 interface AuthContextType {
