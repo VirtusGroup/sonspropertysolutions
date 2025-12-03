@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { StatusBadge } from '@/components/StatusBadge';
-import { ArrowLeft, MapPin, Calendar, DollarSign, FileText, Phone, Mail, Building, Home } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  MapPin, 
+  Calendar, 
+  DollarSign, 
+  FileText, 
+  Phone, 
+  Mail, 
+  Building, 
+  Home,
+  User,
+  Camera,
+  X
+} from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { format } from 'date-fns';
 import { OrderStatus } from '@/types';
@@ -25,6 +39,7 @@ export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { orders, services, currentUser, advanceOrderStatus } = useStore();
+  const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
 
   const order = orders.find((o) => o.id === id);
   const service = order ? services.find((s) => s.id === order.serviceId) : null;
@@ -48,9 +63,33 @@ export default function OrderDetailPage() {
   }
 
   const currentStepIndex = statusSteps.indexOf(order.status);
+  const hasEstimate = order.estimateLow > 0 && order.estimateHigh > 0;
 
   return (
     <div className="flex flex-col min-h-screen pb-6">
+      {/* Lightbox */}
+      {lightboxPhoto && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightboxPhoto(null)}
+        >
+          <button
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
+            onClick={() => setLightboxPhoto(null)}
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
+          <img
+            src={lightboxPhoto}
+            alt="Full size"
+            className="max-w-full max-h-full object-contain rounded-lg"
+          />
+        </motion.div>
+      )}
+
       {/* Header */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
@@ -71,7 +110,7 @@ export default function OrderDetailPage() {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-bold mb-1">{service.title}</h1>
-              <p className="text-sm text-muted-foreground">#{order.jobRef}</p>
+              <p className="text-sm font-mono text-primary">#{order.jobRef}</p>
             </div>
             <StatusBadge status={order.status} />
           </div>
@@ -265,11 +304,76 @@ export default function OrderDetailPage() {
             </Card>
           </motion.div>
 
+          {/* Contact Info */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.22, duration: 0.3 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Contact Info
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-start justify-between">
+                  <span className="text-muted-foreground">Name</span>
+                  <span className="font-medium">{order.contactFirstName} {order.contactLastName}</span>
+                </div>
+                <div className="flex items-start justify-between">
+                  <span className="text-muted-foreground">Email</span>
+                  <span className="font-medium">{order.contactEmail}</span>
+                </div>
+                <div className="flex items-start justify-between">
+                  <span className="text-muted-foreground">Phone</span>
+                  <span className="font-medium">{order.contactPhone}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Photos */}
+          {order.photos && order.photos.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.24, duration: 0.3 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Camera className="h-5 w-5" />
+                    Photos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-3">
+                    {order.photos.map((photo) => (
+                      <button
+                        key={photo.id}
+                        onClick={() => setLightboxPhoto(photo.dataUrl)}
+                        className="aspect-square rounded-lg overflow-hidden bg-muted hover:opacity-80 transition-opacity"
+                      >
+                        <img
+                          src={photo.dataUrl}
+                          alt="Order photo"
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
           {/* Scheduling Info */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.3 }}
+            transition={{ delay: 0.26, duration: 0.3 }}
           >
             <Card>
               <CardHeader>
@@ -312,7 +416,7 @@ export default function OrderDetailPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.3 }}
+            transition={{ delay: 0.28, duration: 0.3 }}
           >
             <Card className="border-accent/50">
               <CardHeader>
@@ -322,12 +426,25 @@ export default function OrderDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-primary mb-2">
-                  ${order.estimateLow} - ${order.estimateHigh}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  * Final pricing may change after on-site inspection
-                </p>
+                {hasEstimate ? (
+                  <>
+                    <div className="text-3xl font-bold text-primary mb-2">
+                      ${order.estimateLow} - ${order.estimateHigh}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      * Final pricing may change after on-site inspection
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-xl font-semibold text-foreground mb-2">
+                      Custom Quote Required
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      A Sons Roofing representative will contact you with pricing details
+                    </p>
+                  </>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -336,7 +453,7 @@ export default function OrderDetailPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35, duration: 0.3 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
           >
             <Card>
               <CardHeader>
