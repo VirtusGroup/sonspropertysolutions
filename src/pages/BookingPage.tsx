@@ -253,7 +253,7 @@ export default function BookingPage() {
       for (const photo of photos) {
         const result = await uploadPhoto(photo.file);
         if (result) {
-          await savePhotoRecord(order.id, result.path);
+          await savePhotoRecord(order.id, result.path, photo.file);
         }
       }
 
