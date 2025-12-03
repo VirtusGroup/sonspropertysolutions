@@ -51,7 +51,7 @@ export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
               transition={{ delay: index * 0.05 + 0.2, duration: 0.3 }}
               className="absolute top-2 right-2 flex flex-col gap-1 items-end"
             >
-              <Badge className="bg-card/90 backdrop-blur text-xs">
+              <Badge className="bg-accent text-primary backdrop-blur text-xs">
                 {categoryLabels[service.category]}
               </Badge>
               <Badge variant="outline" className="bg-card/90 backdrop-blur text-xs">

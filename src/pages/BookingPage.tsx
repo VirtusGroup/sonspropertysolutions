@@ -19,7 +19,6 @@ import {
   MapPin,
   Camera,
   FileText,
-  Wrench,
   Home,
   Plus,
   Building,
@@ -43,13 +42,12 @@ interface BookingState {
 }
 
 const STEPS = [
-  { id: 1, title: 'Service', icon: Wrench },
-  { id: 2, title: 'Property', icon: Building },
-  { id: 3, title: 'Address', icon: MapPin },
-  { id: 4, title: 'Contact', icon: Phone },
-  { id: 5, title: 'Details', icon: Camera },
-  { id: 6, title: 'Schedule', icon: Calendar },
-  { id: 7, title: 'Review', icon: FileText },
+  { id: 1, title: 'Property', icon: Building },
+  { id: 2, title: 'Address', icon: MapPin },
+  { id: 3, title: 'Contact', icon: Phone },
+  { id: 4, title: 'Details', icon: Camera },
+  { id: 5, title: 'Schedule', icon: Calendar },
+  { id: 6, title: 'Review', icon: FileText },
 ];
 
 const TIME_WINDOWS = [
@@ -139,19 +137,18 @@ export default function BookingPage() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return true;
-      case 2: return !!propertyType;
-      case 3: return selectedAddress || (useNewAddress && newAddress.street && newAddress.city && newAddress.zip);
-      case 4: return contactFirstName && contactLastName && contactEmail && contactPhone;
-      case 5: return true;
-      case 6: return preferredDate && timeWindow;
-      case 7: return true;
+      case 1: return !!propertyType;
+      case 2: return selectedAddress || (useNewAddress && newAddress.street && newAddress.city && newAddress.zip);
+      case 3: return contactFirstName && contactLastName && contactEmail && contactPhone;
+      case 4: return true;
+      case 5: return preferredDate && timeWindow;
+      case 6: return true;
       default: return false;
     }
   };
 
   const handleNext = () => {
-    if (currentStep === 3 && useNewAddress && saveNewAddress && newAddress.street && newAddress.city && newAddress.zip) {
+    if (currentStep === 2 && useNewAddress && saveNewAddress && newAddress.street && newAddress.city && newAddress.zip) {
       const newAddressId = `addr-${Date.now()}`;
       addAddress({
         id: newAddressId,
@@ -167,7 +164,7 @@ export default function BookingPage() {
       setUseNewAddress(false);
     }
     
-    if (currentStep < 7 && canProceed()) {
+    if (currentStep < 6 && canProceed()) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -192,7 +189,7 @@ export default function BookingPage() {
 
   const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const remaining = 3 - photos.length;
+  const remaining = 1 - photos.length;
     
     files.slice(0, remaining).forEach(file => {
       const reader = new FileReader();
@@ -350,7 +347,9 @@ export default function BookingPage() {
           <button onClick={handleBack} className="p-1">
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
-          <h1 className="text-lg font-semibold text-foreground">Book Service</h1>
+          <h1 className="text-lg font-semibold text-foreground">
+            Book Service <span className="text-muted-foreground">•</span> {service.title}
+          </h1>
         </div>
 
         {/* Progress Steps - scrollable */}
@@ -395,83 +394,8 @@ export default function BookingPage() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Step 1: Confirm Service */}
+            {/* Step 1: Property Type */}
             {currentStep === 1 && (
-              <div className="space-y-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Service Details</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Service</span>
-                      <span className="font-medium">{service.title}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Quantity</span>
-                      <span className="font-medium">{bookingState.quantity} {service.unit}</span>
-                    </div>
-                    {bookingState.roofType && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Roof Type</span>
-                        <span className="font-medium capitalize">{bookingState.roofType}</span>
-                      </div>
-                    )}
-                    {bookingState.stories > 1 && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Stories</span>
-                        <span className="font-medium">{bookingState.stories}</span>
-                      </div>
-                    )}
-                    {bookingState.addonIds.length > 0 && (
-                      <div className="pt-2 border-t border-border">
-                        <span className="text-muted-foreground text-sm">Add-ons:</span>
-                        <ul className="mt-1 space-y-1">
-                          {bookingState.addonIds.map(addonId => {
-                            const addon = service.addons.find(a => a.id === addonId);
-                            return addon ? (
-                              <li key={addonId} className="text-sm flex justify-between">
-                                <span>{addon.title}</span>
-                                <span className="text-muted-foreground">+${addon.price}</span>
-                              </li>
-                            ) : null;
-                          })}
-                        </ul>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-primary/5 border-primary/20">
-                  <CardContent className="py-4">
-                    <div className="text-center">
-                      {hasEstimate ? (
-                        <>
-                          <p className="text-sm text-muted-foreground mb-1">Estimated Price</p>
-                          <p className="text-2xl font-bold text-primary">
-                            ${bookingState.estimateLow.toLocaleString()} - ${bookingState.estimateHigh.toLocaleString()}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">Final price after inspection</p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-sm text-muted-foreground mb-1">Pricing</p>
-                          <p className="text-lg font-semibold text-foreground">
-                            Custom Quote Required
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            A Sons Roofing representative will contact you with pricing
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {/* Step 2: Property Type */}
-            {currentStep === 2 && (
               <div className="space-y-4">
                 <Card>
                   <CardHeader className="pb-2">
@@ -521,8 +445,8 @@ export default function BookingPage() {
               </div>
             )}
 
-            {/* Step 3: Select Address */}
-            {currentStep === 3 && (
+            {/* Step 2: Select Address */}
+            {currentStep === 2 && (
               <div className="space-y-4">
                 <Card>
                   <CardHeader className="pb-2">
@@ -638,8 +562,8 @@ export default function BookingPage() {
               </div>
             )}
 
-            {/* Step 4: Contact Info */}
-            {currentStep === 4 && (
+            {/* Step 3: Contact Info */}
+            {currentStep === 3 && (
               <div className="space-y-4">
                 <Card>
                   <CardHeader className="pb-2">
@@ -692,28 +616,27 @@ export default function BookingPage() {
               </div>
             )}
 
-            {/* Step 5: Details (Photos & Notes) */}
-            {currentStep === 5 && (
+            {/* Step 4: Details (Photos & Notes) */}
+            {currentStep === 4 && (
               <div className="space-y-4">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Photos (Optional)</CardTitle>
-                    <p className="text-sm text-muted-foreground">Add up to 3 photos to help us understand the issue</p>
+                    <CardTitle className="text-base">Photo (Optional)</CardTitle>
+                    <p className="text-sm text-muted-foreground">Add 1 photo to help us understand the issue</p>
                   </CardHeader>
                   <CardContent>
                     <input
                       ref={fileInputRef}
                       type="file"
                       accept="image/*"
-                      multiple
                       onChange={handlePhotoUpload}
                       className="hidden"
                     />
                     
                     {photos.length > 0 && (
-                      <div className="grid grid-cols-3 gap-3 mb-4">
+                      <div className="mb-4">
                         {photos.map((photo) => (
-                          <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+                          <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden bg-muted max-w-[150px]">
                             <img
                               src={photo.dataUrl}
                               alt="Uploaded photo"
@@ -730,18 +653,13 @@ export default function BookingPage() {
                       </div>
                     )}
                     
-                    {photos.length < 3 && (
+                    {photos.length < 1 && (
                       <button
                         onClick={() => fileInputRef.current?.click()}
                         className="border-2 border-dashed border-border rounded-lg p-6 text-center w-full hover:border-primary/50 transition-colors"
                       >
                         <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-sm font-medium">
-                          {photos.length === 0 ? 'Upload Photos' : 'Add More Photos'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {3 - photos.length} photo{3 - photos.length !== 1 ? 's' : ''} remaining
-                        </p>
+                        <p className="text-sm font-medium">Upload Photo</p>
                       </button>
                     )}
                   </CardContent>
@@ -755,7 +673,7 @@ export default function BookingPage() {
                     <Textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Describe what's going on and where the issue is (e.g., 'Leak in kitchen after last storm, ceiling discoloration about 2×2 ft'). Include roof type, material, & how many stories. Also, include gate code, parking instructions, etc."
+                      placeholder="Include things like how many stories the property is and any special instructions like gate code, where to park, etc."
                       rows={5}
                     />
                   </CardContent>
@@ -763,8 +681,8 @@ export default function BookingPage() {
               </div>
             )}
 
-            {/* Step 6: Schedule */}
-            {currentStep === 6 && (
+            {/* Step 5: Schedule */}
+            {currentStep === 5 && (
               <div className="space-y-4">
                 <Card>
                   <CardHeader className="pb-2">
@@ -813,28 +731,14 @@ export default function BookingPage() {
               </div>
             )}
 
-            {/* Step 7: Review */}
-            {currentStep === 7 && (
+            {/* Step 6: Review */}
+            {currentStep === 6 && (
               <div className="space-y-4">
-                {/* Service Section */}
-                <Card>
-                  <CardHeader className="pb-2 flex-row justify-between items-center">
-                    <CardTitle className="text-base">Service</CardTitle>
-                    <Button variant="ghost" size="sm" onClick={() => handleGoToStep(1)}>
-                      <Pencil className="w-3 h-3 mr-1" /> Edit
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="font-medium">{service.title}</p>
-                    <p className="text-sm text-muted-foreground">{bookingState.quantity} {service.unit}</p>
-                  </CardContent>
-                </Card>
-
                 {/* Property Section */}
                 <Card>
                   <CardHeader className="pb-2 flex-row justify-between items-center">
                     <CardTitle className="text-base">Property</CardTitle>
-                    <Button variant="ghost" size="sm" onClick={() => handleGoToStep(2)}>
+                    <Button variant="ghost" size="sm" onClick={() => handleGoToStep(1)}>
                       <Pencil className="w-3 h-3 mr-1" /> Edit
                     </Button>
                   </CardHeader>
@@ -859,7 +763,7 @@ export default function BookingPage() {
                 <Card>
                   <CardHeader className="pb-2 flex-row justify-between items-center">
                     <CardTitle className="text-base">Contact</CardTitle>
-                    <Button variant="ghost" size="sm" onClick={() => handleGoToStep(4)}>
+                    <Button variant="ghost" size="sm" onClick={() => handleGoToStep(3)}>
                       <Pencil className="w-3 h-3 mr-1" /> Edit
                     </Button>
                   </CardHeader>
@@ -875,7 +779,7 @@ export default function BookingPage() {
                   <Card>
                     <CardHeader className="pb-2 flex-row justify-between items-center">
                       <CardTitle className="text-base">Details</CardTitle>
-                      <Button variant="ghost" size="sm" onClick={() => handleGoToStep(5)}>
+                      <Button variant="ghost" size="sm" onClick={() => handleGoToStep(4)}>
                         <Pencil className="w-3 h-3 mr-1" /> Edit
                       </Button>
                     </CardHeader>
@@ -904,7 +808,7 @@ export default function BookingPage() {
                 <Card>
                   <CardHeader className="pb-2 flex-row justify-between items-center">
                     <CardTitle className="text-base">Schedule</CardTitle>
-                    <Button variant="ghost" size="sm" onClick={() => handleGoToStep(6)}>
+                    <Button variant="ghost" size="sm" onClick={() => handleGoToStep(5)}>
                       <Pencil className="w-3 h-3 mr-1" /> Edit
                     </Button>
                   </CardHeader>
@@ -965,7 +869,7 @@ export default function BookingPage() {
 
       {/* Footer Actions */}
       <div className="sticky bottom-0 p-4 bg-background border-t border-border">
-        {currentStep < 7 ? (
+        {currentStep < 6 ? (
           <Button
             onClick={handleNext}
             disabled={!canProceed()}
