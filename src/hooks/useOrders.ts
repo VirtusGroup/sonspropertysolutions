@@ -50,6 +50,7 @@ export interface Order {
 
 export interface CreateOrderInput {
   service_id: string;
+  service_category?: string;
   address_id?: string | null;
   address_snapshot?: Json;
   property_type: 'residential' | 'commercial';
@@ -96,6 +97,7 @@ export function useOrders() {
         .from('orders')
         .insert({
           service_id: order.service_id,
+          service_category: order.service_category,
           address_id: order.address_id,
           address_snapshot: order.address_snapshot,
           property_type: order.property_type,
