@@ -22,8 +22,15 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
+import { validateCategoryMappings } from "@/config/acculynx";
+import { demoServices } from "@/lib/demoData";
 
 const queryClient = new QueryClient();
+
+// Development: Validate AccuLynx category mappings
+if (import.meta.env.DEV) {
+  validateCategoryMappings(demoServices);
+}
 
 const authRoutes = ['/login', '/register', '/forgot-password'];
 
