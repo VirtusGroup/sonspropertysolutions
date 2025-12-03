@@ -134,6 +134,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          acculynx_contact_id: string | null
+          acculynx_job_id: string | null
           address_id: string | null
           address_snapshot: Json | null
           completed_at: string | null
@@ -141,20 +143,28 @@ export type Database = {
           contact_first_name: string
           contact_last_name: string
           contact_phone: string
-          created_at: string | null
+          created_at: string
           estimate_high: number | null
           estimate_low: number | null
           id: string
-          job_ref: string | null
+          job_ref: string
+          last_sync_at: string | null
+          last_sync_error: string | null
           notes: string | null
           preferred_window: string | null
           property_type: string
           scheduled_at: string | null
+          service_category: string | null
           service_id: string
-          status: string | null
+          status: string
+          sync_attempts: number | null
+          sync_status: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
+          acculynx_contact_id?: string | null
+          acculynx_job_id?: string | null
           address_id?: string | null
           address_snapshot?: Json | null
           completed_at?: string | null
@@ -162,20 +172,28 @@ export type Database = {
           contact_first_name: string
           contact_last_name: string
           contact_phone: string
-          created_at?: string | null
+          created_at?: string
           estimate_high?: number | null
           estimate_low?: number | null
           id?: string
-          job_ref?: string | null
+          job_ref?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
           notes?: string | null
           preferred_window?: string | null
           property_type: string
           scheduled_at?: string | null
+          service_category?: string | null
           service_id: string
-          status?: string | null
+          status?: string
+          sync_attempts?: number | null
+          sync_status?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
+          acculynx_contact_id?: string | null
+          acculynx_job_id?: string | null
           address_id?: string | null
           address_snapshot?: Json | null
           completed_at?: string | null
@@ -183,17 +201,23 @@ export type Database = {
           contact_first_name?: string
           contact_last_name?: string
           contact_phone?: string
-          created_at?: string | null
+          created_at?: string
           estimate_high?: number | null
           estimate_low?: number | null
           id?: string
-          job_ref?: string | null
+          job_ref?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
           notes?: string | null
           preferred_window?: string | null
           property_type?: string
           scheduled_at?: string | null
+          service_category?: string | null
           service_id?: string
-          status?: string | null
+          status?: string
+          sync_attempts?: number | null
+          sync_status?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [

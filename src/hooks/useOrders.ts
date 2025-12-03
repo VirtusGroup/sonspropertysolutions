@@ -16,6 +16,7 @@ export interface Order {
   job_ref: string;
   user_id: string;
   service_id: string;
+  service_category: string | null;
   address_id: string | null;
   address_snapshot: Json | null;
   property_type: 'residential' | 'commercial';
@@ -31,6 +32,14 @@ export interface Order {
   scheduled_at: string | null;
   completed_at: string | null;
   created_at: string;
+  updated_at: string | null;
+  // AccuLynx sync fields
+  sync_status: string | null;
+  acculynx_contact_id: string | null;
+  acculynx_job_id: string | null;
+  sync_attempts: number | null;
+  last_sync_error: string | null;
+  last_sync_at: string | null;
   order_photos?: OrderPhoto[];
 }
 
