@@ -19,6 +19,7 @@ import {
   Trash2,
   Building,
   Home,
+  Lock,
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { Link } from 'react-router-dom';
@@ -40,6 +41,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { ChangePasswordModal } from '@/components/modals/ChangePasswordModal';
 import { Address, PropertyType } from '@/types';
 import { toast } from 'sonner';
 
@@ -48,6 +50,7 @@ export default function AccountPage() {
   const [editingProfile, setEditingProfile] = useState(false);
   const [addingAddress, setAddingAddress] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [firstName, setFirstName] = useState(currentUser?.firstName || '');
   const [lastName, setLastName] = useState(currentUser?.lastName || '');
   const [email, setEmail] = useState(currentUser?.email || '');
@@ -213,6 +216,16 @@ export default function AccountPage() {
                       <p className="text-sm text-muted-foreground">Phone</p>
                       <p>{currentUser.phone || 'Not set'}</p>
                     </div>
+                    <Separator className="my-4" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowPasswordModal(true)}
+                      className="w-full"
+                    >
+                      <Lock className="h-4 w-4 mr-2" />
+                      Change Password
+                    </Button>
                   </>
                 )}
               </CardContent>
@@ -501,6 +514,12 @@ export default function AccountPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        open={showPasswordModal}
+        onOpenChange={setShowPasswordModal}
+      />
     </div>
   );
 }
