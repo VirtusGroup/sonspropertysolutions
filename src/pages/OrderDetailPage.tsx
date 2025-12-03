@@ -21,6 +21,9 @@ import {
   X
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useOrder } from '@/hooks/useOrders';
+import { useAddresses } from '@/hooks/useAddresses';
+import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 import { format } from 'date-fns';
 import { OrderStatus } from '@/types';
 
@@ -38,12 +41,22 @@ const statusLabels: Record<OrderStatus, string> = {
 export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { orders, services, currentUser } = useStore();
+  const { services } = useStore();
+  const { data: order, isLoading } = useOrder(id);
+  const { addresses } = useAddresses();
+  const { getPhotoUrl } = usePhotoUpload();
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
 
-  const order = orders.find((o) => o.id === id);
-  const service = order ? services.find((s) => s.id === order.serviceId) : null;
-  const address = order ? currentUser?.addresses.find((a) => a.id === order.addressId) : null;
+  const service = order ? services.find((s) => s.id === order.service_id) : null;
+  const address = order ? addresses.find((a) => a.id === order.address_id) : null;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (!order || !service) {
     return (
@@ -63,7 +76,7 @@ export default function OrderDetailPage() {
   }
 
   const currentStepIndex = statusSteps.indexOf(order.status);
-  const hasEstimate = order.estimateLow > 0 && order.estimateHigh > 0;
+  const hasEstimate = order.estimate_low && order.estimate_high && order.estimate_low > 0 && order.estimate_high > 0;
 
   return (
     <div className="flex flex-col min-h-screen pb-6">
@@ -110,7 +123,7 @@ export default function OrderDetailPage() {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-bold mb-1">{service.title}</h1>
-              <p className="text-sm font-mono text-primary">#{order.jobRef}</p>
+              <p className="text-sm font-mono text-primary">#{order.job_ref}</p>
             </div>
             <StatusBadge status={order.status} />
           </div>
@@ -163,19 +176,19 @@ export default function OrderDetailPage() {
                           >
                             {statusLabels[step]}
                           </p>
-                          {isCurrent && order.status === 'scheduled' && order.scheduledAt && (
+                          {isCurrent && order.status === 'scheduled' && order.scheduled_at && (
                             <p className="text-sm text-muted-foreground mt-1">
-                              {format(new Date(order.scheduledAt), 'EEEE, MMM d @ h:mm a')}
+                              {format(new Date(order.scheduled_at), 'EEEE, MMM d @ h:mm a')}
                             </p>
                           )}
                           {step === 'received' && (
                             <p className="text-sm text-muted-foreground mt-1">
-                              {format(new Date(order.createdAt), 'MMM d, h:mm a')}
+                              {format(new Date(order.created_at), 'MMM d, h:mm a')}
                             </p>
                           )}
-                          {step === 'finished' && order.completedAt && (
+                          {step === 'finished' && order.completed_at && (
                             <p className="text-sm text-muted-foreground mt-1">
-                              {format(new Date(order.completedAt), 'MMM d, h:mm a')}
+                              {format(new Date(order.completed_at), 'MMM d, h:mm a')}
                             </p>
                           )}
                         </div>
@@ -183,7 +196,6 @@ export default function OrderDetailPage() {
                     );
                   })}
                 </div>
-
               </CardContent>
             </Card>
           </motion.div>
@@ -206,41 +218,6 @@ export default function OrderDetailPage() {
                   <span className="text-muted-foreground">Service</span>
                   <span className="font-medium text-right">{service.title}</span>
                 </div>
-                {order.quantity && (
-                  <div className="flex items-start justify-between">
-                    <span className="text-muted-foreground">Quantity</span>
-                    <span className="font-medium">
-                      {order.quantity} {service.unit.replace('_', ' ')}
-                    </span>
-                  </div>
-                )}
-                {order.roofType && (
-                  <div className="flex items-start justify-between">
-                    <span className="text-muted-foreground">Roof Type</span>
-                    <span className="font-medium capitalize">{order.roofType}</span>
-                  </div>
-                )}
-                {order.stories && (
-                  <div className="flex items-start justify-between">
-                    <span className="text-muted-foreground">Stories</span>
-                    <span className="font-medium">{order.stories}</span>
-                  </div>
-                )}
-                {order.addonIds.length > 0 && (
-                  <div>
-                    <span className="text-muted-foreground block mb-2">Add-ons</span>
-                    <div className="flex flex-wrap gap-2">
-                      {order.addonIds.map((addonId) => {
-                        const addon = service.addons.find((a) => a.id === addonId);
-                        return addon ? (
-                          <Badge key={addon.id} variant="secondary">
-                            {addon.title}
-                          </Badge>
-                        ) : null;
-                      })}
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -264,7 +241,7 @@ export default function OrderDetailPage() {
                     <div className="flex items-center gap-2 mb-2">
                       <p className="font-medium">{address.label}</p>
                       <Badge variant="outline" className="text-xs">
-                        {order.propertyType === 'commercial' ? (
+                        {order.property_type === 'commercial' ? (
                           <><Building className="h-3 w-3 mr-1" />Commercial</>
                         ) : (
                           <><Home className="h-3 w-3 mr-1" />Residential</>
@@ -309,22 +286,22 @@ export default function OrderDetailPage() {
               <CardContent className="space-y-2">
                 <div className="flex items-start justify-between">
                   <span className="text-muted-foreground">Name</span>
-                  <span className="font-medium">{order.contactFirstName} {order.contactLastName}</span>
+                  <span className="font-medium">{order.contact_first_name} {order.contact_last_name}</span>
                 </div>
                 <div className="flex items-start justify-between">
                   <span className="text-muted-foreground">Email</span>
-                  <span className="font-medium">{order.contactEmail}</span>
+                  <span className="font-medium">{order.contact_email}</span>
                 </div>
                 <div className="flex items-start justify-between">
                   <span className="text-muted-foreground">Phone</span>
-                  <span className="font-medium">{order.contactPhone}</span>
+                  <span className="font-medium">{order.contact_phone}</span>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
 
           {/* Photos */}
-          {order.photos && order.photos.length > 0 && (
+          {order.order_photos && order.order_photos.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -339,14 +316,14 @@ export default function OrderDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-3 gap-3">
-                    {order.photos.map((photo) => (
+                    {order.order_photos.map((photo) => (
                       <button
                         key={photo.id}
-                        onClick={() => setLightboxPhoto(photo.dataUrl)}
+                        onClick={() => setLightboxPhoto(getPhotoUrl(photo.storage_path))}
                         className="aspect-square rounded-lg overflow-hidden bg-muted hover:opacity-80 transition-opacity"
                       >
                         <img
-                          src={photo.dataUrl}
+                          src={getPhotoUrl(photo.storage_path)}
                           alt="Order photo"
                           className="w-full h-full object-cover"
                         />
@@ -372,27 +349,27 @@ export default function OrderDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {order.scheduledAt ? (
+                {order.scheduled_at ? (
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Scheduled Date</span>
                       <span className="font-medium">
-                        {format(new Date(order.scheduledAt), 'EEEE, MMMM d, yyyy')}
+                        {format(new Date(order.scheduled_at), 'EEEE, MMMM d, yyyy')}
                       </span>
                     </div>
-                    {order.preferredWindow && (
+                    {order.preferred_window && (
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Time Window</span>
-                        <span className="font-medium">{order.preferredWindow}</span>
+                        <span className="font-medium">{order.preferred_window}</span>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="text-center py-4">
                     <p className="text-muted-foreground">Not yet scheduled</p>
-                    {order.preferredWindow && (
+                    {order.preferred_window && (
                       <p className="text-sm text-muted-foreground mt-1">
-                        Preferred: {order.preferredWindow}
+                        Preferred: {order.preferred_window}
                       </p>
                     )}
                   </div>
@@ -418,7 +395,7 @@ export default function OrderDetailPage() {
                 {hasEstimate ? (
                   <>
                     <div className="text-3xl font-bold text-primary mb-2">
-                      ${order.estimateLow} - ${order.estimateHigh}
+                      ${order.estimate_low} - ${order.estimate_high}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       * Final pricing may change after on-site inspection
@@ -450,13 +427,13 @@ export default function OrderDetailPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="tel:+18172310171">
+                  <a href="tel:+18175551234">
                     <Phone className="h-4 w-4 mr-2" />
-                    Call Sons Roofing
+                    Call Support
                   </a>
                 </Button>
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="mailto:hello@sonsroofs.com">
+                  <a href="mailto:support@sonsroofs.com">
                     <Mail className="h-4 w-4 mr-2" />
                     Email Support
                   </a>
