@@ -101,10 +101,10 @@ export function MobileShell({ children }: MobileShellProps) {
       </motion.header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col pb-24">{children}</main>
+      <main className="flex-1 flex flex-col pb-20">{children}</main>
 
       {/* iOS 26 Liquid Glass Floating Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-5 safe-area-inset-bottom">
+      <div className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-3 safe-area-inset-bottom">
         <motion.nav 
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
