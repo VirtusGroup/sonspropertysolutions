@@ -80,7 +80,6 @@ export function DashboardTile({
         ease: [0.25, 0.1, 0.25, 1]
       }}
       whileTap={!disabled ? { scale: 0.95 } : undefined}
-      className="h-full"
     >
       {children}
     </motion.div>

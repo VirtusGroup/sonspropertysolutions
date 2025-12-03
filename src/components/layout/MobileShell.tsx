@@ -36,7 +36,7 @@ export function MobileShell({ children }: MobileShellProps) {
   };
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background">
+    <div className="flex flex-col min-h-screen w-full max-w-md mx-auto bg-background shadow-xl">
       {/* Header with subtle glass effect */}
       <motion.header 
         initial={{ y: -20, opacity: 0 }}
@@ -101,7 +101,7 @@ export function MobileShell({ children }: MobileShellProps) {
       </motion.header>
 
       {/* Main Content */}
-      <main className="flex-1 pb-24">{children}</main>
+      <main className="flex-1 flex flex-col pb-24">{children}</main>
 
       {/* iOS 26 Liquid Glass Floating Navigation Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-5 safe-area-inset-bottom">
