@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { PropertyType } from '@/types';
 import {
   ArrowLeft,
   ArrowRight,
@@ -20,7 +21,9 @@ import {
   Wrench,
   Home,
   Plus,
+  Building,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface BookingState {
   serviceId: string;
@@ -49,13 +52,14 @@ const TIME_WINDOWS = [
 export default function BookingPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, services, addOrder, addAddress } = useStore();
+  const { currentUser, services, addOrder, addAddress, getNextJobRef } = useStore();
   const bookingState = location.state as BookingState | null;
 
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedAddress, setSelectedAddress] = useState<string>('');
   const [newAddress, setNewAddress] = useState({ street: '', city: '', state: '', zip: '' });
   const [useNewAddress, setUseNewAddress] = useState(false);
+  const [propertyType, setPropertyType] = useState<PropertyType>('residential');
   const [preferredDate, setPreferredDate] = useState('');
   const [timeWindow, setTimeWindow] = useState('morning');
   const [notes, setNotes] = useState('');
@@ -63,6 +67,14 @@ export default function BookingPage() {
   const [saveNewAddress, setSaveNewAddress] = useState(true);
 
   const service = bookingState ? services.find(s => s.id === bookingState.serviceId) : null;
+
+  // Check auth on mount
+  useEffect(() => {
+    if (!currentUser) {
+      toast.error('Please sign in to book a service');
+      navigate('/login');
+    }
+  }, [currentUser, navigate]);
 
   useEffect(() => {
     if (!bookingState || !service) {
@@ -73,11 +85,14 @@ export default function BookingPage() {
   useEffect(() => {
     if (currentUser?.addresses?.length && !selectedAddress) {
       const primary = currentUser.addresses.find(a => a.isDefault);
-      if (primary) setSelectedAddress(primary.id);
+      if (primary) {
+        setSelectedAddress(primary.id);
+        setPropertyType(primary.propertyType);
+      }
     }
   }, [currentUser, selectedAddress]);
 
-  if (!bookingState || !service) {
+  if (!bookingState || !service || !currentUser) {
     return null;
   }
 
@@ -85,15 +100,14 @@ export default function BookingPage() {
     switch (currentStep) {
       case 1: return true;
       case 2: return selectedAddress || (useNewAddress && newAddress.street && newAddress.city && newAddress.zip);
-      case 3: return true; // Details step (optional)
-      case 4: return preferredDate && timeWindow; // Schedule step (required)
+      case 3: return true;
+      case 4: return preferredDate && timeWindow;
       case 5: return true;
       default: return false;
     }
   };
 
   const handleNext = () => {
-    // Save new address when leaving Address step (step 2)
     if (currentStep === 2 && useNewAddress && saveNewAddress && newAddress.street && newAddress.city && newAddress.zip) {
       const newAddressId = `addr-${Date.now()}`;
       addAddress({
@@ -103,6 +117,7 @@ export default function BookingPage() {
         city: newAddress.city,
         state: newAddress.state || 'TX',
         zip: newAddress.zip,
+        propertyType: propertyType,
         isDefault: !currentUser?.addresses?.length,
       });
       setSelectedAddress(newAddressId);
@@ -125,15 +140,22 @@ export default function BookingPage() {
   const handleSubmit = () => {
     const addressId = useNewAddress ? 'new-address' : selectedAddress;
     const orderId = `order-${Date.now()}`;
+    const jobRef = getNextJobRef();
 
     addOrder({
       id: orderId,
+      jobRef: jobRef,
       serviceId: bookingState.serviceId,
-      userId: currentUser?.id || 'guest',
+      userId: currentUser.id,
       status: 'received',
       scheduledAt: preferredDate,
-      preferredWindow: timeWindow,
+      preferredWindow: `${TIME_WINDOWS.find(w => w.id === timeWindow)?.label} (${TIME_WINDOWS.find(w => w.id === timeWindow)?.time})`,
       addressId,
+      propertyType: propertyType,
+      contactFirstName: currentUser.firstName,
+      contactLastName: currentUser.lastName,
+      contactEmail: currentUser.email,
+      contactPhone: currentUser.phone,
       estimateLow: bookingState.estimateLow,
       estimateHigh: bookingState.estimateHigh,
       notes,
@@ -146,12 +168,22 @@ export default function BookingPage() {
     });
 
     navigate(`/orders/${orderId}`);
+    toast.success(`Your request has been received! Job Reference: #${jobRef}`);
   };
 
   const getAddressDisplay = (addressId: string) => {
     const addr = currentUser?.addresses?.find(a => a.id === addressId);
     if (!addr) return '';
     return `${addr.street}, ${addr.city}, ${addr.state} ${addr.zip}`;
+  };
+
+  const handleAddressSelect = (addrId: string) => {
+    const addr = currentUser?.addresses?.find(a => a.id === addrId);
+    if (addr) {
+      setSelectedAddress(addrId);
+      setPropertyType(addr.propertyType);
+      setUseNewAddress(false);
+    }
   };
 
   return (
@@ -264,9 +296,35 @@ export default function BookingPage() {
               </div>
             )}
 
-            {/* Step 2: Select Address */}
+            {/* Step 2: Select Address & Property Type */}
             {currentStep === 2 && (
               <div className="space-y-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Property Type</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <RadioGroup value={propertyType} onValueChange={(val) => setPropertyType(val as PropertyType)}>
+                      <div className="flex gap-4">
+                        <div className="flex items-center space-x-2 p-3 rounded-lg border border-border flex-1">
+                          <RadioGroupItem value="residential" id="prop-residential" />
+                          <Label htmlFor="prop-residential" className="flex items-center gap-2 cursor-pointer">
+                            <Home className="h-4 w-4" />
+                            Residential
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2 p-3 rounded-lg border border-border flex-1">
+                          <RadioGroupItem value="commercial" id="prop-commercial" />
+                          <Label htmlFor="prop-commercial" className="flex items-center gap-2 cursor-pointer">
+                            <Building className="h-4 w-4" />
+                            Commercial
+                          </Label>
+                        </div>
+                      </div>
+                    </RadioGroup>
+                  </CardContent>
+                </Card>
+
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Service Location</CardTitle>
@@ -277,8 +335,7 @@ export default function BookingPage() {
                         if (val === 'new') {
                           setUseNewAddress(true);
                         } else {
-                          setUseNewAddress(false);
-                          setSelectedAddress(val);
+                          handleAddressSelect(val);
                         }
                       }}>
                         {currentUser.addresses.map(addr => (
@@ -286,7 +343,11 @@ export default function BookingPage() {
                             <RadioGroupItem value={addr.id} id={addr.id} className="mt-1" />
                             <Label htmlFor={addr.id} className="flex-1 cursor-pointer">
                               <div className="flex items-center gap-2">
-                                <Home className="w-4 h-4 text-muted-foreground" />
+                                {addr.propertyType === 'commercial' ? (
+                                  <Building className="w-4 h-4 text-muted-foreground" />
+                                ) : (
+                                  <Home className="w-4 h-4 text-muted-foreground" />
+                                )}
                                 <span className="font-medium">{addr.label || 'Home'}</span>
                                 {addr.isDefault && (
                                   <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">Primary</span>
@@ -397,8 +458,8 @@ export default function BookingPage() {
                     <Textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Include your roof type, material, & how many stories. Also, include things like gate code, parking instructions, etc."
-                      rows={4}
+                      placeholder="Describe what's going on and where the issue is (e.g., 'Leak in kitchen after last storm, ceiling discoloration about 2×2 ft'). Include roof type, material, & how many stories. Also, include gate code, parking instructions, etc."
+                      rows={5}
                     />
                   </CardContent>
                 </Card>
@@ -469,6 +530,10 @@ export default function BookingPage() {
                         <span className="font-medium">{service.title}</span>
                       </div>
                       <div className="flex justify-between">
+                        <span className="text-muted-foreground">Property Type</span>
+                        <span className="font-medium capitalize">{propertyType}</span>
+                      </div>
+                      <div className="flex justify-between">
                         <span className="text-muted-foreground">Quantity</span>
                         <span className="font-medium">{bookingState.quantity} {service.unit}</span>
                       </div>
@@ -513,14 +578,14 @@ export default function BookingPage() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Payment collected after service completion
+                        Final pricing will be confirmed after on-site inspection
                       </p>
                     </div>
                   </CardContent>
                 </Card>
 
                 <p className="text-xs text-muted-foreground text-center px-4">
-                  By confirming, you agree to our terms of service. We'll contact you to confirm your appointment.
+                  By confirming, you agree to our terms of service. A Sons Roofing representative will contact you within 2 hours for emergency requests or next business day for standard services.
                 </p>
               </div>
             )}

@@ -9,6 +9,15 @@ interface AppState {
   setCurrentUser: (user: User | null) => void;
   updateUser: (updates: Partial<User>) => void;
   
+  // Auth
+  login: (email: string, password: string) => { success: boolean; error?: string };
+  logout: () => void;
+  registerUser: (userData: Omit<User, 'id' | 'addresses' | 'referralCode' | 'credits' | 'tier'>) => { success: boolean; error?: string };
+  
+  // Job Reference
+  nextJobNumber: number;
+  getNextJobRef: () => string;
+  
   // Services
   services: Service[];
   
@@ -29,7 +38,11 @@ interface AppState {
   // Notifications
   notifications: Notification[];
   markNotificationRead: (notificationId: string) => void;
+  markAllNotificationsRead: () => void;
   unreadNotificationsCount: number;
+  
+  // Notification Preferences
+  updateNotificationPreferences: (preferences: { push?: boolean; email?: boolean }) => void;
   
   // Dev helpers
   resetDemoData: () => void;
@@ -37,15 +50,15 @@ interface AppState {
   advanceOrderStatus: (orderId: string) => void;
 }
 
-const getInitialUser = () => {
-  // Default to guest user
-  return demoUsers[0];
+const generateReferralCode = (firstName: string) => {
+  const code = firstName.toUpperCase().slice(0, 4) + Math.floor(1000 + Math.random() * 9000);
+  return code;
 };
 
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
-      currentUser: getInitialUser(),
+      currentUser: null,
       
       setCurrentUser: (user) => set({ currentUser: user }),
       
@@ -55,6 +68,57 @@ export const useStore = create<AppState>()(
             ? { ...state.currentUser, ...updates }
             : null,
         })),
+      
+      // Auth functions
+      login: (email, password) => {
+        const user = demoUsers.find(
+          (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+        );
+        if (user) {
+          set({ currentUser: user });
+          return { success: true };
+        }
+        return { success: false, error: 'Invalid email or password' };
+      },
+      
+      logout: () => set({ currentUser: null }),
+      
+      registerUser: (userData) => {
+        const existingUser = demoUsers.find(
+          (u) => u.email.toLowerCase() === userData.email.toLowerCase()
+        );
+        if (existingUser) {
+          return { success: false, error: 'An account with this email already exists' };
+        }
+        
+        const newUser: User = {
+          id: `user-${Date.now()}`,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          email: userData.email,
+          phone: userData.phone,
+          password: userData.password,
+          addresses: [],
+          referralCode: generateReferralCode(userData.firstName),
+          credits: 0,
+          tier: 'regular',
+          notificationPreferences: userData.notificationPreferences || { push: true, email: true },
+          termsAcceptedAt: userData.termsAcceptedAt,
+        };
+        
+        demoUsers.push(newUser);
+        set({ currentUser: newUser });
+        return { success: true };
+      },
+      
+      // Job Reference
+      nextJobNumber: 10001,
+      
+      getNextJobRef: () => {
+        const num = get().nextJobNumber;
+        set({ nextJobNumber: num + 1 });
+        return `SR-${num}`;
+      },
       
       services: demoServices,
       
@@ -76,13 +140,11 @@ export const useStore = create<AppState>()(
         set((state) => {
           if (!state.currentUser) return state;
           
-          // If this is the first address or marked as default, set as default
           const isFirstAddress = state.currentUser.addresses.length === 0;
           const addressToAdd = isFirstAddress || address.isDefault
             ? address
             : { ...address, isDefault: false };
           
-          // If setting as default, unset others
           const updatedAddresses = address.isDefault
             ? state.currentUser.addresses.map((a) => ({ ...a, isDefault: false }))
             : state.currentUser.addresses;
@@ -103,7 +165,6 @@ export const useStore = create<AppState>()(
             addr.id === addressId ? { ...addr, ...updates } : addr
           );
           
-          // If setting as default, unset others
           if (updates.isDefault) {
             updatedAddresses = updatedAddresses.map((a) =>
               a.id === addressId ? a : { ...a, isDefault: false }
@@ -126,7 +187,6 @@ export const useStore = create<AppState>()(
             (a) => a.id !== addressId
           );
           
-          // If we deleted the default and there are others, make first one default
           const hasDefault = filtered.some((a) => a.isDefault);
           if (!hasDefault && filtered.length > 0) {
             filtered[0].isDefault = true;
@@ -154,18 +214,42 @@ export const useStore = create<AppState>()(
           notifications: state.notifications.map((n) =>
             n.id === notificationId ? { ...n, read: true } : n
           ),
+          unreadNotificationsCount: state.notifications.filter(
+            (n) => n.id !== notificationId && !n.read
+          ).length,
+        })),
+      
+      markAllNotificationsRead: () =>
+        set((state) => ({
+          notifications: state.notifications.map((n) => ({ ...n, read: true })),
+          unreadNotificationsCount: 0,
         })),
       
       unreadNotificationsCount: demoNotifications.filter((n) => !n.read).length,
       
+      updateNotificationPreferences: (preferences) =>
+        set((state) => {
+          if (!state.currentUser) return state;
+          return {
+            currentUser: {
+              ...state.currentUser,
+              notificationPreferences: {
+                ...state.currentUser.notificationPreferences,
+                ...preferences,
+              },
+            },
+          };
+        }),
+      
       resetDemoData: () =>
         set({
-          currentUser: getInitialUser(),
+          currentUser: null,
           services: demoServices,
           orders: demoOrders,
           promos: demoPromos,
           notifications: demoNotifications,
           unreadNotificationsCount: demoNotifications.filter((n) => !n.read).length,
+          nextJobNumber: 10001,
         }),
       
       impersonateUser: (userId) => {
@@ -179,8 +263,9 @@ export const useStore = create<AppState>()(
         set((state) => {
           const statusProgression: Record<string, string> = {
             received: 'scheduled',
-            scheduled: 'on-site',
-            'on-site': 'completed',
+            scheduled: 'in_progress',
+            in_progress: 'job_complete',
+            job_complete: 'finished',
           };
           
           return {
@@ -194,7 +279,7 @@ export const useStore = create<AppState>()(
               
               if (nextStatus === 'scheduled') {
                 updates.scheduledAt = new Date().toISOString();
-              } else if (nextStatus === 'completed') {
+              } else if (nextStatus === 'finished') {
                 updates.completedAt = new Date().toISOString();
               }
               
@@ -210,6 +295,7 @@ export const useStore = create<AppState>()(
         orders: state.orders,
         promos: state.promos,
         notifications: state.notifications,
+        nextJobNumber: state.nextJobNumber,
       }),
     }
   )

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   User,
   MapPin,
@@ -16,6 +17,8 @@ import {
   LogOut,
   Plus,
   Trash2,
+  Building,
+  Home,
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { Link } from 'react-router-dom';
@@ -27,18 +30,32 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Address } from '@/types';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Address, PropertyType } from '@/types';
 import { toast } from 'sonner';
 
 export default function AccountPage() {
-  const { currentUser, updateUser, addAddress, deleteAddress } = useStore();
+  const { currentUser, updateUser, addAddress, deleteAddress, updateNotificationPreferences, logout } = useStore();
   const [editingProfile, setEditingProfile] = useState(false);
   const [addingAddress, setAddingAddress] = useState(false);
-  const [name, setName] = useState(currentUser?.name || '');
+  const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
+  const [firstName, setFirstName] = useState(currentUser?.firstName || '');
+  const [lastName, setLastName] = useState(currentUser?.lastName || '');
+  const [email, setEmail] = useState(currentUser?.email || '');
   const [phone, setPhone] = useState(currentUser?.phone || '');
+  const [newAddressPropertyType, setNewAddressPropertyType] = useState<PropertyType>('residential');
 
   const handleSaveProfile = () => {
-    updateUser({ name, phone });
+    updateUser({ firstName, lastName, email, phone });
     setEditingProfile(false);
     toast.success('Profile updated');
   };
@@ -54,15 +71,26 @@ export default function AccountPage() {
       city: formData.get('city') as string,
       state: formData.get('state') as string,
       zip: formData.get('zip') as string,
+      propertyType: newAddressPropertyType,
       isDefault: currentUser?.addresses.length === 0,
     };
     addAddress(newAddress);
     setAddingAddress(false);
+    setNewAddressPropertyType('residential');
     toast.success('Address added');
   };
 
+  const handleDeleteAddress = () => {
+    if (addressToDelete) {
+      deleteAddress(addressToDelete);
+      setAddressToDelete(null);
+      toast.success('Address deleted');
+    }
+  };
+
   const handleSignOut = () => {
-    toast.success('Signed out (demo only)');
+    logout();
+    toast.success('Signed out');
   };
 
   if (!currentUser) {
@@ -75,13 +103,16 @@ export default function AccountPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/auth/login">Sign In</Link>
+              <Link to="/login">Sign In</Link>
             </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
+
+  const fullName = `${currentUser.firstName} ${currentUser.lastName}`;
+  const initials = `${currentUser.firstName[0] || ''}${currentUser.lastName[0] || ''}`;
 
   return (
     <div className="flex flex-col min-h-screen pb-6">
@@ -99,10 +130,10 @@ export default function AccountPage() {
             transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
             className="h-16 w-16 rounded-full bg-primary-foreground/20 flex items-center justify-center text-2xl font-bold"
           >
-            {currentUser.name.split(' ').map(n => n[0]).join('')}
+            {initials}
           </motion.div>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">{currentUser.name}</h1>
+            <h1 className="text-2xl font-bold">{fullName}</h1>
             <p className="opacity-90">{currentUser.email}</p>
             <Badge variant="secondary" className="mt-1">
               {currentUser.tier.toUpperCase()}
@@ -138,9 +169,23 @@ export default function AccountPage() {
               <CardContent className="space-y-4">
                 {editingProfile ? (
                   <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>First Name</Label>
+                        <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Last Name</Label>
+                        <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                      </div>
+                    </div>
                     <div className="space-y-2">
-                      <Label>Name</Label>
-                      <Input value={name} onChange={(e) => setName(e.target.value)} />
+                      <Label>Email</Label>
+                      <Input 
+                        type="email"
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Phone</Label>
@@ -150,10 +195,6 @@ export default function AccountPage() {
                         onChange={(e) => setPhone(e.target.value)}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label>Email</Label>
-                      <Input value={currentUser.email} disabled />
-                    </div>
                     <Button onClick={handleSaveProfile} className="w-full">
                       Save Changes
                     </Button>
@@ -161,12 +202,16 @@ export default function AccountPage() {
                 ) : (
                   <>
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Phone</p>
-                      <p>{currentUser.phone || 'Not set'}</p>
+                      <p className="text-sm text-muted-foreground">Name</p>
+                      <p>{fullName}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">Email</p>
                       <p>{currentUser.email}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Phone</p>
+                      <p>{currentUser.phone || 'Not set'}</p>
                     </div>
                   </>
                 )}
@@ -210,11 +255,18 @@ export default function AccountPage() {
                       className="flex items-start justify-between p-3 border rounded-lg"
                     >
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <p className="font-medium">{addr.label}</p>
                           {addr.isDefault && (
                             <Badge variant="secondary" className="text-xs">Default</Badge>
                           )}
+                          <Badge variant="outline" className="text-xs">
+                            {addr.propertyType === 'commercial' ? (
+                              <><Building className="h-3 w-3 mr-1" />Commercial</>
+                            ) : (
+                              <><Home className="h-3 w-3 mr-1" />Residential</>
+                            )}
+                          </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {addr.street}
@@ -227,10 +279,7 @@ export default function AccountPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => {
-                          deleteAddress(addr.id);
-                          toast.success('Address deleted');
-                        }}
+                        onClick={() => setAddressToDelete(addr.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -257,22 +306,28 @@ export default function AccountPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">In-app notifications</p>
+                    <p className="font-medium">Push notifications</p>
                     <p className="text-sm text-muted-foreground">
                       Receive updates about your orders
                     </p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch 
+                    checked={currentUser.notificationPreferences?.push ?? true}
+                    onCheckedChange={(checked) => updateNotificationPreferences({ push: checked })}
+                  />
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Push notifications</p>
+                    <p className="font-medium">Email notifications</p>
                     <p className="text-sm text-muted-foreground">
-                      Demo only - not available yet
+                      Receive order updates via email
                     </p>
                   </div>
-                  <Switch disabled />
+                  <Switch 
+                    checked={currentUser.notificationPreferences?.email ?? true}
+                    onCheckedChange={(checked) => updateNotificationPreferences({ email: checked })}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -356,7 +411,7 @@ export default function AccountPage() {
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Sign Out (Demo)
+              Sign Out
             </Button>
           </motion.div>
         </div>
@@ -373,6 +428,29 @@ export default function AccountPage() {
             <div className="space-y-2">
               <Label htmlFor="label">Label</Label>
               <Input id="label" name="label" placeholder="Home" required />
+            </div>
+            <div className="space-y-2">
+              <Label>Property Type</Label>
+              <RadioGroup
+                value={newAddressPropertyType}
+                onValueChange={(value) => setNewAddressPropertyType(value as PropertyType)}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="residential" id="residential" />
+                  <Label htmlFor="residential" className="flex items-center gap-1 cursor-pointer">
+                    <Home className="h-4 w-4" />
+                    Residential
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="commercial" id="commercial" />
+                  <Label htmlFor="commercial" className="flex items-center gap-1 cursor-pointer">
+                    <Building className="h-4 w-4" />
+                    Commercial
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
             <div className="space-y-2">
               <Label htmlFor="street">Street Address</Label>
@@ -405,6 +483,24 @@ export default function AccountPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Address Confirmation */}
+      <AlertDialog open={!!addressToDelete} onOpenChange={() => setAddressToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this property?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this property? Any active jobs may still reference this address.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAddress}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
