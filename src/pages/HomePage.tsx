@@ -65,7 +65,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Dashboard Grid */}
-        <main className="flex-1 min-h-0 p-2 pb-2 overflow-hidden flex flex-col">
+        <main className="flex-1 min-h-0 p-2 pb-2 overflow-hidden relative">
           <div className="grid grid-cols-4 gap-1.5 auto-rows-fr">
             {/* Primary Actions - Accent colored */}
             <DashboardTile
@@ -142,19 +142,17 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Popular Services Section */}
+          {/* Popular Services Section - Absolutely positioned */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.4 }}
-            className="flex-1 flex items-center"
+            className="absolute left-2 right-2 bottom-0"
           >
-            <div className="w-full">
-              <h3 className="text-sm font-semibold text-foreground mb-2 px-2">
-                Popular Services
-              </h3>
-              <PopularServicesGrid />
-            </div>
+            <h3 className="text-sm font-semibold text-foreground mb-2">
+              Popular Services
+            </h3>
+            <PopularServicesGrid />
           </motion.div>
         </main>
       </div>
