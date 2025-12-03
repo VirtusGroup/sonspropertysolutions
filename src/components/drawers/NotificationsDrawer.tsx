@@ -20,10 +20,12 @@ interface NotificationsDrawerProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const typeConfig: Record<Notification['type'], { label: string; icon: typeof Bell; color: string }> = {
+const typeConfig: Record<string, { label: string; icon: typeof Bell; color: string }> = {
   order: { label: 'Order Updates', icon: ClipboardList, color: 'text-primary' },
   system: { label: 'System', icon: Info, color: 'text-muted-foreground' },
 };
+
+const defaultTypeConfig = { label: 'Updates', icon: Bell, color: 'text-muted-foreground' };
 
 export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerProps) {
   const { notifications, markNotificationRead, markAllNotificationsRead } = useStore();
@@ -46,8 +48,8 @@ export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerP
     return bLatest - aLatest;
   });
 
-  const getIcon = (type: Notification['type']) => {
-    const config = typeConfig[type];
+  const getIcon = (type: string) => {
+    const config = typeConfig[type] || defaultTypeConfig;
     const Icon = config.icon;
     return <Icon className={`h-5 w-5 ${config.color}`} />;
   };
@@ -101,7 +103,7 @@ export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerP
           ) : (
             <div className="space-y-6">
               {sortedGroups.map(([type, typeNotifications]) => {
-                const config = typeConfig[type as Notification['type']];
+                const config = typeConfig[type] || defaultTypeConfig;
                 const Icon = config.icon;
                 const typeUnreadCount = typeNotifications.filter(n => !n.read).length;
 
