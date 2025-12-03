@@ -190,7 +190,7 @@ export default function BookingPage() {
 
   const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const remaining = 3 - photos.length;
+    const remaining = 1 - photos.length;
     
     files.slice(0, remaining).forEach(file => {
       const preview = URL.createObjectURL(file);
@@ -610,8 +610,8 @@ export default function BookingPage() {
                     <CardTitle className="text-base">Photos (Optional)</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">Upload up to 3 photos to help us understand the issue</p>
-                    <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} />
+                    <p className="text-sm text-muted-foreground mb-3">Upload 1 photo to help us understand the issue</p>
+                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                     <div className="grid grid-cols-3 gap-3">
                       {photos.map(photo => (
                         <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden border">
@@ -621,7 +621,7 @@ export default function BookingPage() {
                           </button>
                         </div>
                       ))}
-                      {photos.length < 3 && (
+                      {photos.length < 1 && (
                         <button onClick={() => fileInputRef.current?.click()} className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors">
                           <Upload className="w-6 h-6" />
                           <span className="text-xs">Add Photo</span>
