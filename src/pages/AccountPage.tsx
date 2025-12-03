@@ -114,8 +114,8 @@ export default function AccountPage() {
     );
   }
 
-  const fullName = `${currentUser.firstName} ${currentUser.lastName}`;
-  const initials = `${currentUser.firstName[0] || ''}${currentUser.lastName[0] || ''}`;
+  const fullName = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim();
+  const initials = `${currentUser.firstName?.[0] || ''}${currentUser.lastName?.[0] || ''}`;
 
   return (
     <div className="flex flex-col min-h-screen pb-6">
