@@ -2,6 +2,10 @@ import { useState, useEffect, ChangeEvent, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
+import { useAuth } from '@/hooks/useAuth';
+import { useAddresses } from '@/hooks/useAddresses';
+import { useOrders, CreateOrderInput } from '@/hooks/useOrders';
+import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,7 +14,6 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { PropertyType, Photo } from '@/types';
 import {
   ArrowLeft,
   ArrowRight,
@@ -31,6 +34,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+type PropertyType = 'residential' | 'commercial';
+
 interface BookingState {
   serviceId: string;
   quantity: number;
@@ -39,6 +44,12 @@ interface BookingState {
   addonIds: string[];
   estimateLow: number;
   estimateHigh: number;
+}
+
+interface PhotoItem {
+  id: string;
+  file: File;
+  preview: string;
 }
 
 const STEPS = [
@@ -59,32 +70,37 @@ const TIME_WINDOWS = [
 export default function BookingPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, services, addOrder, addAddress, getNextJobRef } = useStore();
+  const { services } = useStore();
+  const { user, profile } = useAuth();
+  const { addresses, addAddress: addAddressMutation } = useAddresses();
+  const { createOrder } = useOrders();
+  const { uploadPhoto, savePhotoRecord } = usePhotoUpload();
   const bookingState = location.state as BookingState | null;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Property Type (Step 2)
+  // Property Type (Step 1)
   const [propertyType, setPropertyType] = useState<PropertyType>('residential');
   
-  // Address (Step 3)
+  // Address (Step 2)
   const [selectedAddress, setSelectedAddress] = useState<string>('');
   const [newAddress, setNewAddress] = useState({ label: '', street: '', city: '', state: '', zip: '' });
   const [useNewAddress, setUseNewAddress] = useState(false);
   const [saveNewAddress, setSaveNewAddress] = useState(true);
   
-  // Contact Info (Step 4)
+  // Contact Info (Step 3)
   const [contactFirstName, setContactFirstName] = useState('');
   const [contactLastName, setContactLastName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   
-  // Details (Step 5)
-  const [photos, setPhotos] = useState<Photo[]>([]);
+  // Details (Step 4)
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [notes, setNotes] = useState('');
   
-  // Schedule (Step 6)
+  // Schedule (Step 5)
   const [preferredDate, setPreferredDate] = useState('');
   const [timeWindow, setTimeWindow] = useState('morning');
   const [isFlexible, setIsFlexible] = useState(false);
@@ -98,11 +114,11 @@ export default function BookingPage() {
 
   // Check auth on mount
   useEffect(() => {
-    if (!currentUser) {
+    if (!user) {
       toast.error('Please sign in to book a service');
       navigate('/login');
     }
-  }, [currentUser, navigate]);
+  }, [user, navigate]);
 
   useEffect(() => {
     if (!bookingState || !service) {
@@ -110,28 +126,30 @@ export default function BookingPage() {
     }
   }, [bookingState, service, navigate]);
 
-  // Pre-fill contact info from currentUser
+  // Pre-fill contact info from profile
   useEffect(() => {
-    if (currentUser) {
-      setContactFirstName(currentUser.firstName);
-      setContactLastName(currentUser.lastName);
-      setContactEmail(currentUser.email);
-      setContactPhone(currentUser.phone);
+    if (profile) {
+      setContactFirstName(profile.first_name || '');
+      setContactLastName(profile.last_name || '');
+      setContactPhone(profile.phone || '');
     }
-  }, [currentUser]);
+    if (user) {
+      setContactEmail(user.email || '');
+    }
+  }, [profile, user]);
 
   // Set default address
   useEffect(() => {
-    if (currentUser?.addresses?.length && !selectedAddress) {
-      const primary = currentUser.addresses.find(a => a.isDefault);
+    if (addresses.length && !selectedAddress) {
+      const primary = addresses.find(a => a.is_default);
       if (primary) {
         setSelectedAddress(primary.id);
-        setPropertyType(primary.propertyType);
+        setPropertyType(primary.property_type);
       }
     }
-  }, [currentUser, selectedAddress]);
+  }, [addresses, selectedAddress]);
 
-  if (!bookingState || !service || !currentUser) {
+  if (!bookingState || !service || !user) {
     return null;
   }
 
@@ -147,21 +165,25 @@ export default function BookingPage() {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep === 2 && useNewAddress && saveNewAddress && newAddress.street && newAddress.city && newAddress.zip) {
-      const newAddressId = `addr-${Date.now()}`;
-      addAddress({
-        id: newAddressId,
-        label: newAddress.label || 'Home',
-        street: newAddress.street,
-        city: newAddress.city,
-        state: newAddress.state || 'TX',
-        zip: newAddress.zip,
-        propertyType: propertyType,
-        isDefault: !currentUser?.addresses?.length,
-      });
-      setSelectedAddress(newAddressId);
-      setUseNewAddress(false);
+      try {
+        const result = await addAddressMutation.mutateAsync({
+          label: newAddress.label || 'Home',
+          street: newAddress.street,
+          city: newAddress.city,
+          state: newAddress.state || 'TX',
+          zip: newAddress.zip,
+          property_type: propertyType,
+          is_default: addresses.length === 0,
+          unit: null,
+        });
+        setSelectedAddress(result.id);
+        setUseNewAddress(false);
+      } catch {
+        toast.error('Failed to save address');
+        return;
+      }
     }
     
     if (currentStep < 6 && canProceed()) {
@@ -189,77 +211,96 @@ export default function BookingPage() {
 
   const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-  const remaining = 1 - photos.length;
+    const remaining = 3 - photos.length;
     
     files.slice(0, remaining).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPhotos(prev => [...prev, { 
-          id: `photo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, 
-          dataUrl: reader.result as string 
-        }]);
-      };
-      reader.readAsDataURL(file);
+      const preview = URL.createObjectURL(file);
+      setPhotos(prev => [...prev, { 
+        id: `photo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, 
+        file,
+        preview
+      }]);
     });
     
-    // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   const handleRemovePhoto = (photoId: string) => {
-    setPhotos(prev => prev.filter(p => p.id !== photoId));
+    setPhotos(prev => {
+      const photo = prev.find(p => p.id === photoId);
+      if (photo) {
+        URL.revokeObjectURL(photo.preview);
+      }
+      return prev.filter(p => p.id !== photoId);
+    });
   };
 
-  const handleSubmit = () => {
-    const addressId = useNewAddress ? 'new-address' : selectedAddress;
-    const orderId = `order-${Date.now()}`;
-    const jobRef = getNextJobRef();
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      // Get address snapshot
+      const address = addresses.find(a => a.id === selectedAddress);
+      const addressSnapshot = address ? {
+        label: address.label,
+        street: address.street,
+        city: address.city,
+        state: address.state,
+        zip: address.zip,
+        unit: address.unit,
+      } : null;
 
-    addOrder({
-      id: orderId,
-      jobRef: jobRef,
-      serviceId: bookingState.serviceId,
-      userId: currentUser.id,
-      status: 'received',
-      scheduledAt: preferredDate,
-      preferredWindow: `${TIME_WINDOWS.find(w => w.id === timeWindow)?.label} (${TIME_WINDOWS.find(w => w.id === timeWindow)?.time})`,
-      addressId,
-      propertyType: propertyType,
-      contactFirstName,
-      contactLastName,
-      contactEmail,
-      contactPhone,
-      estimateLow: bookingState.estimateLow,
-      estimateHigh: bookingState.estimateHigh,
-      notes,
-      addonIds: bookingState.addonIds,
-      photos,
-      createdAt: new Date().toISOString(),
-      quantity: bookingState.quantity,
-      roofType: bookingState.roofType,
-      stories: bookingState.stories,
-    });
+      const orderInput: CreateOrderInput = {
+        service_id: bookingState.serviceId,
+        address_id: selectedAddress || null,
+        address_snapshot: addressSnapshot,
+        property_type: propertyType,
+        contact_first_name: contactFirstName,
+        contact_last_name: contactLastName,
+        contact_email: contactEmail,
+        contact_phone: contactPhone,
+        preferred_window: `${TIME_WINDOWS.find(w => w.id === timeWindow)?.label} (${TIME_WINDOWS.find(w => w.id === timeWindow)?.time})`,
+        notes: notes || undefined,
+        estimate_low: bookingState.estimateLow || undefined,
+        estimate_high: bookingState.estimateHigh || undefined,
+        scheduled_at: preferredDate || undefined,
+      };
 
-    setConfirmedJobRef(jobRef);
-    setConfirmedOrderId(orderId);
-    setIsConfirmed(true);
+      const order = await createOrder.mutateAsync(orderInput);
+
+      // Upload photos
+      for (const photo of photos) {
+        const result = await uploadPhoto(photo.file);
+        if (result) {
+          await savePhotoRecord(order.id, result.path);
+        }
+      }
+
+      setConfirmedJobRef(order.job_ref);
+      setConfirmedOrderId(order.id);
+      setIsConfirmed(true);
+    } catch (error) {
+      toast.error('Failed to submit order. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getAddressDisplay = (addressId: string) => {
-    const addr = currentUser?.addresses?.find(a => a.id === addressId);
+    const addr = addresses.find(a => a.id === addressId);
     if (!addr) return '';
     return `${addr.street}, ${addr.city}, ${addr.state} ${addr.zip}`;
   };
 
   const getAddressLabel = (addressId: string) => {
-    const addr = currentUser?.addresses?.find(a => a.id === addressId);
+    const addr = addresses.find(a => a.id === addressId);
     return addr?.label || 'Home';
   };
 
   const handleAddressSelect = (addrId: string) => {
-    const addr = currentUser?.addresses?.find(a => a.id === addrId);
+    const addr = addresses.find(a => a.id === addrId);
     if (addr) {
       setSelectedAddress(addrId);
       setUseNewAddress(false);
@@ -352,7 +393,7 @@ export default function BookingPage() {
           </h1>
         </div>
 
-        {/* Progress Steps - scrollable */}
+        {/* Progress Steps */}
         <div className="flex gap-2 px-4 pb-3 overflow-x-auto">
           {STEPS.map((step) => {
             const Icon = step.icon;
@@ -453,7 +494,7 @@ export default function BookingPage() {
                     <CardTitle className="text-base">Service Location</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {currentUser?.addresses?.length ? (
+                    {addresses.length ? (
                       <RadioGroup value={useNewAddress ? 'new' : selectedAddress} onValueChange={(val) => {
                         if (val === 'new') {
                           setUseNewAddress(true);
@@ -461,99 +502,65 @@ export default function BookingPage() {
                           handleAddressSelect(val);
                         }
                       }}>
-                        {currentUser.addresses.map(addr => (
+                        {addresses.map(addr => (
                           <div key={addr.id} className="flex items-start space-x-3 p-3 rounded-lg border border-border mb-2">
                             <RadioGroupItem value={addr.id} id={addr.id} className="mt-1" />
                             <Label htmlFor={addr.id} className="flex-1 cursor-pointer">
                               <div className="flex items-center gap-2">
-                                {addr.propertyType === 'commercial' ? (
-                                  <Building className="w-4 h-4 text-muted-foreground" />
+                                {addr.property_type === 'commercial' ? (
+                                  <Building className="h-4 w-4 text-muted-foreground" />
                                 ) : (
-                                  <Home className="w-4 h-4 text-muted-foreground" />
+                                  <Home className="h-4 w-4 text-muted-foreground" />
                                 )}
-                                <span className="font-medium">{addr.label || 'Home'}</span>
-                                {addr.isDefault && (
-                                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">Primary</span>
-                                )}
+                                <span className="font-medium">{addr.label}</span>
+                                {addr.is_default && <Badge variant="secondary" className="text-xs">Default</Badge>}
                               </div>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {addr.street}, {addr.city}, {addr.state} {addr.zip}
-                              </p>
+                              <p className="text-sm text-muted-foreground mt-1">{addr.street}, {addr.city}, {addr.state} {addr.zip}</p>
                             </Label>
                           </div>
                         ))}
-                        <div className="flex items-start space-x-3 p-3 rounded-lg border border-dashed border-border">
-                          <RadioGroupItem value="new" id="new-address" className="mt-1" />
-                          <Label htmlFor="new-address" className="flex-1 cursor-pointer">
-                            <div className="flex items-center gap-2">
-                              <Plus className="w-4 h-4 text-muted-foreground" />
-                              <span className="font-medium">Add New Address</span>
-                            </div>
+                        <div 
+                          className={`flex items-center space-x-3 p-3 rounded-lg border-2 border-dashed cursor-pointer ${useNewAddress ? 'border-primary bg-primary/5' : 'border-border'}`}
+                          onClick={() => setUseNewAddress(true)}
+                        >
+                          <RadioGroupItem value="new" id="new-addr" />
+                          <Label htmlFor="new-addr" className="flex items-center gap-2 cursor-pointer">
+                            <Plus className="h-4 w-4" />
+                            <span>Add new address</span>
                           </Label>
                         </div>
                       </RadioGroup>
                     ) : (
-                      <p className="text-muted-foreground text-sm mb-3">No saved addresses. Add one below:</p>
+                      <p className="text-muted-foreground mb-4">No saved addresses. Add one below.</p>
                     )}
-
-                    {(useNewAddress || !currentUser?.addresses?.length) && (
+                    
+                    {(useNewAddress || !addresses.length) && (
                       <div className="mt-4 space-y-3">
-                        <div>
-                          <Label htmlFor="label">Property Nickname</Label>
-                          <Input
-                            id="label"
-                            value={newAddress.label}
-                            onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
-                            placeholder="Home, Office, etc."
-                          />
+                        <div className="space-y-2">
+                          <Label>Address Label</Label>
+                          <Input placeholder="Home" value={newAddress.label} onChange={(e) => setNewAddress(prev => ({ ...prev, label: e.target.value }))} />
                         </div>
-                        <div>
-                          <Label htmlFor="street">Street Address</Label>
-                          <Input
-                            id="street"
-                            value={newAddress.street}
-                            onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                            placeholder="123 Main St"
-                          />
+                        <div className="space-y-2">
+                          <Label>Street Address</Label>
+                          <Input value={newAddress.street} onChange={(e) => setNewAddress(prev => ({ ...prev, street: e.target.value }))} />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <Label htmlFor="city">City</Label>
-                            <Input
-                              id="city"
-                              value={newAddress.city}
-                              onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                              placeholder="Fort Worth"
-                            />
+                          <div className="space-y-2">
+                            <Label>City</Label>
+                            <Input value={newAddress.city} onChange={(e) => setNewAddress(prev => ({ ...prev, city: e.target.value }))} />
                           </div>
-                          <div>
-                            <Label htmlFor="state">State</Label>
-                            <Input
-                              id="state"
-                              value={newAddress.state}
-                              onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                              placeholder="TX"
-                            />
+                          <div className="space-y-2">
+                            <Label>State</Label>
+                            <Input value={newAddress.state} onChange={(e) => setNewAddress(prev => ({ ...prev, state: e.target.value }))} placeholder="TX" />
                           </div>
                         </div>
-                        <div>
-                          <Label htmlFor="zip">ZIP Code</Label>
-                          <Input
-                            id="zip"
-                            value={newAddress.zip}
-                            onChange={(e) => setNewAddress({ ...newAddress, zip: e.target.value })}
-                            placeholder="76109"
-                          />
+                        <div className="space-y-2">
+                          <Label>ZIP Code</Label>
+                          <Input value={newAddress.zip} onChange={(e) => setNewAddress(prev => ({ ...prev, zip: e.target.value }))} />
                         </div>
-                        <div className="flex items-center space-x-2 pt-2">
-                          <Checkbox
-                            id="saveAddress"
-                            checked={saveNewAddress}
-                            onCheckedChange={(checked) => setSaveNewAddress(checked as boolean)}
-                          />
-                          <Label htmlFor="saveAddress" className="text-sm text-muted-foreground">
-                            Save this address for future bookings
-                          </Label>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="save-addr" checked={saveNewAddress} onCheckedChange={(c) => setSaveNewAddress(c as boolean)} />
+                          <Label htmlFor="save-addr" className="text-sm cursor-pointer">Save this address for future bookings</Label>
                         </div>
                       </div>
                     )}
@@ -568,114 +575,65 @@ export default function BookingPage() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Contact Information</CardTitle>
-                    <p className="text-sm text-muted-foreground">Who should we contact about this job?</p>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label htmlFor="contactFirstName">First Name</Label>
-                        <Input
-                          id="contactFirstName"
-                          value={contactFirstName}
-                          onChange={(e) => setContactFirstName(e.target.value)}
-                          placeholder="First name"
-                        />
+                      <div className="space-y-2">
+                        <Label>First Name</Label>
+                        <Input value={contactFirstName} onChange={(e) => setContactFirstName(e.target.value)} />
                       </div>
-                      <div>
-                        <Label htmlFor="contactLastName">Last Name</Label>
-                        <Input
-                          id="contactLastName"
-                          value={contactLastName}
-                          onChange={(e) => setContactLastName(e.target.value)}
-                          placeholder="Last name"
-                        />
+                      <div className="space-y-2">
+                        <Label>Last Name</Label>
+                        <Input value={contactLastName} onChange={(e) => setContactLastName(e.target.value)} />
                       </div>
                     </div>
-                    <div>
-                      <Label htmlFor="contactEmail">Email</Label>
-                      <Input
-                        id="contactEmail"
-                        type="email"
-                        value={contactEmail}
-                        onChange={(e) => setContactEmail(e.target.value)}
-                        placeholder="email@example.com"
-                      />
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <Input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
                     </div>
-                    <div>
-                      <Label htmlFor="contactPhone">Phone</Label>
-                      <Input
-                        id="contactPhone"
-                        type="tel"
-                        value={contactPhone}
-                        onChange={(e) => setContactPhone(e.target.value)}
-                        placeholder="(555) 123-4567"
-                      />
+                    <div className="space-y-2">
+                      <Label>Phone</Label>
+                      <Input type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
                     </div>
                   </CardContent>
                 </Card>
               </div>
             )}
 
-            {/* Step 4: Details (Photos & Notes) */}
+            {/* Step 4: Details */}
             {currentStep === 4 && (
               <div className="space-y-4">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Photo (Optional)</CardTitle>
-                    <p className="text-sm text-muted-foreground">Add 1 photo to help us understand the issue</p>
+                    <CardTitle className="text-base">Photos (Optional)</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
-                    
-                    {photos.length > 0 && (
-                      <div className="mb-4">
-                        {photos.map((photo) => (
-                          <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden bg-muted max-w-[150px]">
-                            <img
-                              src={photo.dataUrl}
-                              alt="Uploaded photo"
-                              className="w-full h-full object-cover"
-                            />
-                            <button
-                              onClick={() => handleRemovePhoto(photo.id)}
-                              className="absolute top-1 right-1 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {photos.length < 1 && (
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-border rounded-lg p-6 text-center w-full hover:border-primary/50 transition-colors"
-                      >
-                        <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-sm font-medium">Upload Photo</p>
-                      </button>
-                    )}
+                    <p className="text-sm text-muted-foreground mb-3">Upload up to 3 photos to help us understand the issue</p>
+                    <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} />
+                    <div className="grid grid-cols-3 gap-3">
+                      {photos.map(photo => (
+                        <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden border">
+                          <img src={photo.preview} alt="Upload" className="w-full h-full object-cover" />
+                          <button onClick={() => handleRemovePhoto(photo.id)} className="absolute top-1 right-1 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      {photos.length < 3 && (
+                        <button onClick={() => fileInputRef.current?.click()} className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                          <Upload className="w-6 h-6" />
+                          <span className="text-xs">Add Photo</span>
+                        </button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
-
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Special Instructions</CardTitle>
+                    <CardTitle className="text-base">Notes</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Include things like how many stories the property is and any special instructions like gate code, where to park, etc."
-                      rows={5}
-                    />
+                    <Textarea placeholder="Describe what's going on and where the issue is..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} />
                   </CardContent>
                 </Card>
               </div>
@@ -689,206 +647,93 @@ export default function BookingPage() {
                     <CardTitle className="text-base">Preferred Date</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Input
-                      type="date"
-                      value={preferredDate}
-                      onChange={(e) => setPreferredDate(e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full"
-                    />
+                    <Input type="date" value={preferredDate} onChange={(e) => setPreferredDate(e.target.value)} min={new Date().toISOString().split('T')[0]} />
                   </CardContent>
                 </Card>
-
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Time Window</CardTitle>
+                    <CardTitle className="text-base">Preferred Time</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <RadioGroup value={timeWindow} onValueChange={setTimeWindow}>
-                      {TIME_WINDOWS.map(window => (
-                        <div key={window.id} className="flex items-center space-x-3 p-3 rounded-lg border border-border mb-2">
-                          <RadioGroupItem value={window.id} id={window.id} />
-                          <Label htmlFor={window.id} className="flex-1 cursor-pointer">
-                            <span className="font-medium">{window.label}</span>
-                            <p className="text-sm text-muted-foreground">{window.time}</p>
+                      {TIME_WINDOWS.map(tw => (
+                        <div key={tw.id} className={`flex items-center space-x-3 p-3 rounded-lg border mb-2 cursor-pointer ${timeWindow === tw.id ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTimeWindow(tw.id)}>
+                          <RadioGroupItem value={tw.id} id={tw.id} />
+                          <Label htmlFor={tw.id} className="flex-1 cursor-pointer">
+                            <span className="font-medium">{tw.label}</span>
+                            <span className="text-sm text-muted-foreground ml-2">{tw.time}</span>
                           </Label>
                         </div>
                       ))}
                     </RadioGroup>
+                    <div className="flex items-center space-x-2 mt-4">
+                      <Checkbox id="flexible" checked={isFlexible} onCheckedChange={(c) => setIsFlexible(c as boolean)} />
+                      <Label htmlFor="flexible" className="text-sm cursor-pointer">I'm flexible with timing</Label>
+                    </div>
                   </CardContent>
                 </Card>
-
-                <div className="flex items-center space-x-2 px-1">
-                  <Checkbox
-                    id="flexible"
-                    checked={isFlexible}
-                    onCheckedChange={(checked) => setIsFlexible(checked as boolean)}
-                  />
-                  <Label htmlFor="flexible" className="text-sm text-muted-foreground">
-                    I'm flexible with my schedule for earlier availability
-                  </Label>
-                </div>
               </div>
             )}
 
             {/* Step 6: Review */}
             {currentStep === 6 && (
               <div className="space-y-4">
-                {/* Property Section */}
                 <Card>
-                  <CardHeader className="pb-2 flex-row justify-between items-center">
-                    <CardTitle className="text-base">Property</CardTitle>
-                    <Button variant="ghost" size="sm" onClick={() => handleGoToStep(1)}>
-                      <Pencil className="w-3 h-3 mr-1" /> Edit
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    <Badge variant="secondary" className="mb-2">
-                      {propertyType === 'commercial' ? (
-                        <><Building className="w-3 h-3 mr-1" /> Commercial</>
-                      ) : (
-                        <><Home className="w-3 h-3 mr-1" /> Residential</>
-                      )}
-                    </Badge>
-                    <p className="font-medium">{useNewAddress ? (newAddress.label || 'New Address') : getAddressLabel(selectedAddress)}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {useNewAddress 
-                        ? `${newAddress.street}, ${newAddress.city}, ${newAddress.state} ${newAddress.zip}` 
-                        : getAddressDisplay(selectedAddress)}
-                    </p>
-                  </CardContent>
-                </Card>
-
-                {/* Contact Section */}
-                <Card>
-                  <CardHeader className="pb-2 flex-row justify-between items-center">
-                    <CardTitle className="text-base">Contact</CardTitle>
-                    <Button variant="ghost" size="sm" onClick={() => handleGoToStep(3)}>
-                      <Pencil className="w-3 h-3 mr-1" /> Edit
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="space-y-1">
-                    <p className="font-medium">{contactFirstName} {contactLastName}</p>
-                    <p className="text-sm text-muted-foreground">{contactEmail}</p>
-                    <p className="text-sm text-muted-foreground">{contactPhone}</p>
-                  </CardContent>
-                </Card>
-
-                {/* Photos & Notes Section */}
-                {(photos.length > 0 || notes) && (
-                  <Card>
-                    <CardHeader className="pb-2 flex-row justify-between items-center">
-                      <CardTitle className="text-base">Details</CardTitle>
-                      <Button variant="ghost" size="sm" onClick={() => handleGoToStep(4)}>
-                        <Pencil className="w-3 h-3 mr-1" /> Edit
-                      </Button>
-                    </CardHeader>
-                    <CardContent>
-                      {photos.length > 0 && (
-                        <div className="flex gap-2 mb-3">
-                          {photos.map((photo) => (
-                            <div key={photo.id} className="w-16 h-16 rounded-lg overflow-hidden bg-muted">
-                              <img
-                                src={photo.dataUrl}
-                                alt="Uploaded"
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {notes && (
-                        <p className="text-sm text-muted-foreground">{notes}</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Schedule Section */}
-                <Card>
-                  <CardHeader className="pb-2 flex-row justify-between items-center">
-                    <CardTitle className="text-base">Schedule</CardTitle>
-                    <Button variant="ghost" size="sm" onClick={() => handleGoToStep(5)}>
-                      <Pencil className="w-3 h-3 mr-1" /> Edit
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="font-medium">
-                      {new Date(preferredDate).toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {TIME_WINDOWS.find(w => w.id === timeWindow)?.label} ({TIME_WINDOWS.find(w => w.id === timeWindow)?.time})
-                    </p>
-                    {isFlexible && (
-                      <p className="text-xs text-primary mt-1">Flexible scheduling enabled</p>
+                  <CardHeader><CardTitle className="text-base">Review Your Request</CardTitle></CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div><p className="text-sm text-muted-foreground">Service</p><p className="font-medium">{service.title}</p></div>
+                      <Button variant="ghost" size="sm" onClick={() => navigate(-1)}><Pencil className="w-3 h-3" /></Button>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <div><p className="text-sm text-muted-foreground">Property Type</p><p className="font-medium capitalize">{propertyType}</p></div>
+                      <Button variant="ghost" size="sm" onClick={() => setCurrentStep(1)}><Pencil className="w-3 h-3" /></Button>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <div><p className="text-sm text-muted-foreground">Location</p><p className="font-medium">{getAddressLabel(selectedAddress)}</p><p className="text-sm text-muted-foreground">{getAddressDisplay(selectedAddress)}</p></div>
+                      <Button variant="ghost" size="sm" onClick={() => setCurrentStep(2)}><Pencil className="w-3 h-3" /></Button>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <div><p className="text-sm text-muted-foreground">Contact</p><p className="font-medium">{contactFirstName} {contactLastName}</p><p className="text-sm text-muted-foreground">{contactEmail}</p><p className="text-sm text-muted-foreground">{contactPhone}</p></div>
+                      <Button variant="ghost" size="sm" onClick={() => setCurrentStep(3)}><Pencil className="w-3 h-3" /></Button>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <div><p className="text-sm text-muted-foreground">Preferred Date</p><p className="font-medium">{preferredDate || 'Not set'}</p><p className="text-sm text-muted-foreground">{TIME_WINDOWS.find(w => w.id === timeWindow)?.label} ({TIME_WINDOWS.find(w => w.id === timeWindow)?.time})</p></div>
+                      <Button variant="ghost" size="sm" onClick={() => setCurrentStep(5)}><Pencil className="w-3 h-3" /></Button>
+                    </div>
+                    {hasEstimate && (
+                      <div className="pt-4 border-t">
+                        <p className="text-sm text-muted-foreground">Estimated Cost</p>
+                        <p className="text-2xl font-bold text-primary">${bookingState.estimateLow} - ${bookingState.estimateHigh}</p>
+                        <p className="text-xs text-muted-foreground">Final price may vary based on inspection</p>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
-
-                {/* Estimate Section */}
-                <Card className="bg-primary/5 border-primary/20">
-                  <CardContent className="py-4">
-                    <div className="text-center">
-                      {hasEstimate ? (
-                        <>
-                          <p className="text-sm text-muted-foreground mb-1">Estimated Price Range</p>
-                          <p className="text-2xl font-bold text-primary">
-                            ${bookingState.estimateLow.toLocaleString()} - ${bookingState.estimateHigh.toLocaleString()}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            * Final pricing will be confirmed after on-site inspection
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-sm text-muted-foreground mb-1">Pricing</p>
-                          <p className="text-lg font-semibold text-foreground">
-                            Custom Quote Required
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            A Sons Roofing representative will contact you with pricing details
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <p className="text-xs text-muted-foreground text-center px-4">
-                  By confirming, you agree to our terms of service.
-                </p>
               </div>
             )}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Footer Actions */}
-      <div className="sticky bottom-0 p-4 bg-background border-t border-border">
-        {currentStep < 6 ? (
-          <Button
-            onClick={handleNext}
-            disabled={!canProceed()}
-            className="w-full"
-            size="lg"
-          >
-            Continue
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        ) : (
-          <Button
-            onClick={handleSubmit}
-            className="w-full"
-            size="lg"
-          >
-            <Check className="w-4 h-4 mr-2" />
-            Confirm Booking
-          </Button>
-        )}
+      {/* Footer */}
+      <div className="sticky bottom-0 bg-background border-t border-border p-4">
+        <div className="flex gap-3">
+          {currentStep > 1 && (
+            <Button variant="outline" onClick={handleBack} className="flex-1">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+            </Button>
+          )}
+          {currentStep < 6 ? (
+            <Button onClick={handleNext} disabled={!canProceed()} className="flex-1">
+              Next <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          ) : (
+            <Button onClick={handleSubmit} disabled={isSubmitting} className="flex-1">
+              {isSubmitting ? 'Submitting...' : 'Submit Request'}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
