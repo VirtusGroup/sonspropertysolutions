@@ -102,25 +102,40 @@ export type Database = {
       }
       order_photos: {
         Row: {
+          acculynx_file_id: string | null
           caption: string | null
-          created_at: string | null
+          created_at: string
+          file_name: string | null
+          file_size: number | null
           id: string
+          mime_type: string | null
           order_id: string
           storage_path: string
+          uploaded_to_acculynx: boolean
         }
         Insert: {
+          acculynx_file_id?: string | null
           caption?: string | null
-          created_at?: string | null
+          created_at?: string
+          file_name?: string | null
+          file_size?: number | null
           id?: string
+          mime_type?: string | null
           order_id: string
           storage_path: string
+          uploaded_to_acculynx?: boolean
         }
         Update: {
+          acculynx_file_id?: string | null
           caption?: string | null
-          created_at?: string | null
+          created_at?: string
+          file_name?: string | null
+          file_size?: number | null
           id?: string
+          mime_type?: string | null
           order_id?: string
           storage_path?: string
+          uploaded_to_acculynx?: boolean
         }
         Relationships: [
           {

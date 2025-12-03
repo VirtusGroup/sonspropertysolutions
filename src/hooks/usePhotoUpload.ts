@@ -43,12 +43,20 @@ export function usePhotoUpload() {
     return !error;
   };
 
-  const savePhotoRecord = async (orderId: string, storagePath: string, caption?: string) => {
+  const savePhotoRecord = async (
+    orderId: string, 
+    storagePath: string, 
+    file: File,
+    caption?: string
+  ) => {
     const { data, error } = await supabase
       .from('order_photos')
       .insert({
         order_id: orderId,
         storage_path: storagePath,
+        file_name: file.name,
+        file_size: file.size,
+        mime_type: file.type,
         caption,
       })
       .select()
