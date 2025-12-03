@@ -7,7 +7,12 @@ export interface OrderPhoto {
   id: string;
   order_id: string;
   storage_path: string;
+  file_name: string | null;
+  file_size: number | null;
+  mime_type: string | null;
   caption: string | null;
+  uploaded_to_acculynx: boolean;
+  acculynx_file_id: string | null;
   created_at: string;
 }
 
