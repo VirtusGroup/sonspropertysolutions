@@ -10,10 +10,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useStore } from '@/store/useStore';
+import { useNotifications, Notification } from '@/hooks/useNotifications';
 import { Bell, ClipboardList, Info, CheckCheck, BellOff } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { Notification } from '@/types';
 
 interface NotificationsDrawerProps {
   open: boolean;
@@ -28,9 +27,7 @@ const typeConfig: Record<string, { label: string; icon: typeof Bell; color: stri
 const defaultTypeConfig = { label: 'Updates', icon: Bell, color: 'text-muted-foreground' };
 
 export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerProps) {
-  const { notifications, markNotificationRead, markAllNotificationsRead } = useStore();
-
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
   // Group notifications by type
   const groupedNotifications = notifications.reduce((acc, notification) => {
@@ -43,8 +40,8 @@ export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerP
 
   // Sort groups by most recent notification in each group
   const sortedGroups = Object.entries(groupedNotifications).sort(([, a], [, b]) => {
-    const aLatest = Math.max(...a.map(n => new Date(n.timestamp).getTime()));
-    const bLatest = Math.max(...b.map(n => new Date(n.timestamp).getTime()));
+    const aLatest = Math.max(...a.map(n => new Date(n.created_at).getTime()));
+    const bLatest = Math.max(...b.map(n => new Date(n.created_at).getTime()));
     return bLatest - aLatest;
   });
 
@@ -73,7 +70,7 @@ export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerP
                 variant="ghost"
                 size="sm"
                 className="text-xs"
-                onClick={markAllNotificationsRead}
+                onClick={() => markAllAsRead.mutate()}
               >
                 <CheckCheck className="h-4 w-4 mr-1" />
                 Mark all read
@@ -127,7 +124,7 @@ export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerP
                     {/* Notifications in Group */}
                     <div className="space-y-2">
                       {typeNotifications
-                        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                         .map((notification, index) => (
                           <motion.div
                             key={notification.id}
@@ -156,7 +153,7 @@ export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerP
                                 </p>
                                 <div className="flex items-center justify-between gap-2 mt-3">
                                   <span className="text-xs text-muted-foreground">
-                                    {formatDistanceToNow(new Date(notification.timestamp), {
+                                    {formatDistanceToNow(new Date(notification.created_at), {
                                       addSuffix: true,
                                     })}
                                   </span>
@@ -166,15 +163,15 @@ export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerP
                                         variant="ghost"
                                         size="sm"
                                         className="h-7 text-xs"
-                                        onClick={() => markNotificationRead(notification.id)}
+                                        onClick={() => markAsRead.mutate(notification.id)}
                                       >
                                         Mark Read
                                       </Button>
                                     )}
-                                    {notification.orderId && (
+                                    {notification.order_id && (
                                       <Button asChild variant="outline" size="sm" className="h-7 text-xs">
                                         <Link
-                                          to={`/orders/${notification.orderId}`}
+                                          to={`/orders/${notification.order_id}`}
                                           onClick={() => onOpenChange(false)}
                                         >
                                           View Order

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import roofingBg from '@/assets/roofing-background.jpg';
-import { useStore } from '@/store/useStore';
+import { useAuth } from '@/hooks/useAuth';
+import { useOrders } from '@/hooks/useOrders';
+import { useNotifications } from '@/hooks/useNotifications';
 import { DashboardTile } from '@/components/DashboardTile';
 import { PopularServicesGrid } from '@/components/PopularServicesGrid';
 import { BusinessHoursModal } from '@/components/modals/BusinessHoursModal';
@@ -23,13 +25,12 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
-  const { orders, currentUser, notifications } = useStore();
+  const { user } = useAuth();
+  const { orders } = useOrders();
+  const { unreadCount } = useNotifications();
   const [hoursModalOpen, setHoursModalOpen] = useState(false);
   const [areaModalOpen, setAreaModalOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-
-  const userOrders = orders.filter((o) => o.userId === currentUser?.id);
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-background relative overflow-hidden">
@@ -80,7 +81,7 @@ export default function HomePage() {
               label="My Orders"
               href="/orders"
               variant="primary"
-              badge={userOrders.length}
+              badge={orders.length}
               index={1}
             />
             <DashboardTile

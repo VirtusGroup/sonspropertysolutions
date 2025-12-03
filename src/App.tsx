@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,7 +6,8 @@ import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-ro
 import { AnimatePresence } from "framer-motion";
 import { MobileShell } from "@/components/layout/MobileShell";
 import { PageTransition } from "@/components/PageTransition";
-import { useStore } from "@/store/useStore";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 import HomePage from "./pages/HomePage";
 import ServicesPage from "./pages/ServicesPage";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
@@ -28,22 +28,33 @@ const queryClient = new QueryClient();
 const authRoutes = ['/login', '/register', '/forgot-password'];
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { currentUser } = useStore();
+  const { user, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
   const isAuthPage = authRoutes.includes(location.pathname);
 
   useEffect(() => {
+    if (loading) return;
+    
     // If not logged in and not on auth page, redirect to login
-    if (!currentUser && !isAuthPage) {
+    if (!user && !isAuthPage) {
       navigate('/login', { replace: true });
     }
     // If logged in and on auth page, redirect to home
-    if (currentUser && isAuthPage) {
+    if (user && isAuthPage) {
       navigate('/', { replace: true });
     }
-  }, [currentUser, isAuthPage, navigate]);
+  }, [user, loading, isAuthPage, navigate]);
+
+  // Show nothing while loading
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return <>{children}</>;
 }
@@ -75,17 +86,19 @@ function AnimatedRoutes() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <MobileShell>
-          <AuthGuard>
-            <AnimatedRoutes />
-          </AuthGuard>
-        </MobileShell>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <MobileShell>
+            <AuthGuard>
+              <AnimatedRoutes />
+            </AuthGuard>
+          </MobileShell>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

@@ -2,26 +2,25 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/EmptyState';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ClipboardList, MapPin, Clock, CheckCircle2 } from 'lucide-react';
+import { useOrders } from '@/hooks/useOrders';
+import { useAddresses } from '@/hooks/useAddresses';
 import { useStore } from '@/store/useStore';
 import { format } from 'date-fns';
 
 export default function OrdersPage() {
-  const { orders, currentUser, services } = useStore();
+  const { orders, isLoading } = useOrders();
+  const { addresses } = useAddresses();
+  const { services } = useStore();
   const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
 
-  const userOrders = orders
-    .filter((o) => o.userId === currentUser?.id)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-  const activeOrders = userOrders.filter(
+  const activeOrders = orders.filter(
     (o) => !['finished', 'cancelled'].includes(o.status)
   );
-  const pastOrders = userOrders.filter(
+  const pastOrders = orders.filter(
     (o) => ['finished', 'cancelled'].includes(o.status)
   );
 
@@ -47,6 +46,14 @@ export default function OrdersPage() {
       />
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -103,8 +110,8 @@ export default function OrdersPage() {
           ) : (
             <div className="space-y-4">
               {displayedOrders.map((order, index) => {
-                const service = services.find((s) => s.id === order.serviceId);
-                const address = currentUser?.addresses.find((a) => a.id === order.addressId);
+                const service = services.find((s) => s.id === order.service_id);
+                const address = addresses.find((a) => a.id === order.address_id);
 
                 if (!service) return null;
 
@@ -127,7 +134,7 @@ export default function OrdersPage() {
                               <div className="flex items-center gap-2 mb-1">
                                 <CardTitle className="text-lg">{service.title}</CardTitle>
                               </div>
-                              <p className="text-sm font-mono text-primary">#{order.jobRef}</p>
+                              <p className="text-sm font-mono text-primary">#{order.job_ref}</p>
                               {address && (
                                 <div className="flex items-center text-sm text-muted-foreground gap-1 mt-1">
                                   <MapPin className="h-3 w-3" />
@@ -141,21 +148,21 @@ export default function OrdersPage() {
                         <CardContent className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">Requested</span>
-                            <span>{format(new Date(order.createdAt), 'MMM d, yyyy')}</span>
+                            <span>{format(new Date(order.created_at), 'MMM d, yyyy')}</span>
                           </div>
-                          {order.scheduledAt && (
+                          {order.scheduled_at && (
                             <div className="flex items-center justify-between text-sm">
                               <span className="text-muted-foreground">Scheduled</span>
                               <span className="font-medium">
-                                {format(new Date(order.scheduledAt), 'MMM d, h:mm a')}
+                                {format(new Date(order.scheduled_at), 'MMM d, h:mm a')}
                               </span>
                             </div>
                           )}
                           <div className="flex items-center justify-between text-sm pt-2 border-t">
                             <span className="text-muted-foreground">Estimate</span>
-                            {order.estimateLow > 0 && order.estimateHigh > 0 ? (
+                            {order.estimate_low && order.estimate_high ? (
                               <span className="font-semibold text-primary">
-                                ${order.estimateLow} - ${order.estimateHigh}
+                                ${order.estimate_low} - ${order.estimate_high}
                               </span>
                             ) : (
                               <span className="text-muted-foreground italic">Custom quote</span>

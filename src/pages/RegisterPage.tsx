@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { z } from 'zod';
-import { useStore } from '@/store/useStore';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,7 +37,7 @@ type FormErrors = {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { registerUser } = useStore();
+  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -78,21 +78,22 @@ export default function RegisterPage() {
         return;
       }
 
-      const registerResult = registerUser({
+      const { error } = await signUp(formData.email.trim(), formData.password, {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
-        email: formData.email.trim(),
         phone: formData.phone.trim(),
-        password: formData.password,
-        notificationPreferences: { push: true, email: true },
         termsAcceptedAt: new Date().toISOString(),
       });
 
-      if (registerResult.success) {
-        toast.success('Account created successfully! Welcome to Sons Property Solutions.');
-        navigate('/');
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast.error('An account with this email already exists');
+        } else {
+          toast.error(error.message);
+        }
       } else {
-        toast.error(registerResult.error || 'Failed to create account');
+        toast.success('Account created! Please check your email to confirm your account.');
+        navigate('/login');
       }
     } catch (error) {
       toast.error('An error occurred. Please try again.');
