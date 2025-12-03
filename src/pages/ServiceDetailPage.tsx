@@ -15,9 +15,23 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle2, XCircle, Home, Building2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { estimatePrice } from '@/lib/estimator';
+import { ServiceCategory } from '@/types';
+
+const categoryLabels: Record<ServiceCategory, string> = {
+  roofing: 'Roof Inspections',
+  gutters: 'Gutters & Drainage',
+  maintenance: 'Repair & Maintenance',
+  storm: 'Emergency Services',
+};
+
+const applicabilityConfig = {
+  residential: { label: 'Residential Only', icon: Home, variant: 'secondary' as const },
+  commercial: { label: 'Commercial Only', icon: Building2, variant: 'secondary' as const },
+  both: { label: 'Residential & Commercial', icon: null, variant: 'outline' as const },
+};
 
 export default function ServiceDetailPage() {
   const { slug } = useParams();
@@ -80,6 +94,7 @@ export default function ServiceDetailPage() {
   };
 
   const priceUnit = service.unit === 'fixed' ? '' : ` / ${service.unit.replace('_', ' ')}`;
+  const applicability = applicabilityConfig[service.applicableTo];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -116,9 +131,14 @@ export default function ServiceDetailPage() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
+          className="absolute top-4 right-4 flex flex-col gap-1 items-end"
         >
-          <Badge className="absolute top-4 right-4 bg-card/90 backdrop-blur">
-            {service.category}
+          <Badge className="bg-card/90 backdrop-blur">
+            {categoryLabels[service.category]}
+          </Badge>
+          <Badge variant={applicability.variant} className="bg-card/90 backdrop-blur">
+            {applicability.icon && <applicability.icon className="h-3 w-3 mr-1" />}
+            {applicability.label}
           </Badge>
         </motion.div>
       </motion.div>

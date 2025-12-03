@@ -1,7 +1,7 @@
-import { Service } from '@/types';
+import { Service, ServiceCategory } from '@/types';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock } from 'lucide-react';
+import { Clock, Home, Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -10,11 +10,26 @@ interface ServiceCardProps {
   index?: number;
 }
 
+const categoryLabels: Record<ServiceCategory, string> = {
+  roofing: 'Roof Inspections',
+  gutters: 'Gutters & Drainage',
+  maintenance: 'Repair & Maintenance',
+  storm: 'Emergency Services',
+};
+
+const applicabilityLabels = {
+  residential: { label: 'Residential', icon: Home },
+  commercial: { label: 'Commercial', icon: Building2 },
+  both: { label: 'Res & Com', icon: null },
+};
+
 export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
   const priceDisplay =
     service.unit === 'fixed'
       ? `$${service.basePrice}`
       : `$${service.basePrice}/${service.unit.replace('_', ' ')}`;
+
+  const applicability = applicabilityLabels[service.applicableTo];
 
   return (
     <motion.div
@@ -34,9 +49,14 @@ export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: index * 0.05 + 0.2, duration: 0.3 }}
+              className="absolute top-2 right-2 flex flex-col gap-1 items-end"
             >
-              <Badge className="absolute top-2 right-2 bg-card/90 backdrop-blur">
-                {service.category}
+              <Badge className="bg-card/90 backdrop-blur text-xs">
+                {categoryLabels[service.category]}
+              </Badge>
+              <Badge variant="outline" className="bg-card/90 backdrop-blur text-xs">
+                {applicability.icon && <applicability.icon className="h-3 w-3 mr-1" />}
+                {applicability.label}
               </Badge>
             </motion.div>
           </div>
