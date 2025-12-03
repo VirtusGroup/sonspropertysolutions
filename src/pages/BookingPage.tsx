@@ -88,7 +88,6 @@ export default function BookingPage() {
   const [selectedAddress, setSelectedAddress] = useState<string>('');
   const [newAddress, setNewAddress] = useState({ label: '', street: '', city: '', state: '', zip: '' });
   const [useNewAddress, setUseNewAddress] = useState(false);
-  const [saveNewAddress, setSaveNewAddress] = useState(true);
   
   // Contact Info (Step 3)
   const [contactFirstName, setContactFirstName] = useState('');
@@ -156,7 +155,7 @@ export default function BookingPage() {
   const canProceed = () => {
     switch (currentStep) {
       case 1: return !!propertyType;
-      case 2: return selectedAddress || (useNewAddress && newAddress.street && newAddress.city && newAddress.zip);
+      case 2: return !!selectedAddress;
       case 3: return contactFirstName && contactLastName && contactEmail && contactPhone;
       case 4: return true;
       case 5: return preferredDate && timeWindow;
@@ -166,26 +165,6 @@ export default function BookingPage() {
   };
 
   const handleNext = async () => {
-    if (currentStep === 2 && useNewAddress && saveNewAddress && newAddress.street && newAddress.city && newAddress.zip) {
-      try {
-        const result = await addAddressMutation.mutateAsync({
-          label: newAddress.label || 'Home',
-          street: newAddress.street,
-          city: newAddress.city,
-          state: newAddress.state || 'TX',
-          zip: newAddress.zip,
-          property_type: propertyType,
-          is_default: addresses.length === 0,
-          unit: null,
-        });
-        setSelectedAddress(result.id);
-        setUseNewAddress(false);
-      } catch {
-        toast.error('Failed to save address');
-        return;
-      }
-    }
-    
     if (currentStep < 6 && canProceed()) {
       setCurrentStep(currentStep + 1);
     }
@@ -558,10 +537,33 @@ export default function BookingPage() {
                           <Label>ZIP Code</Label>
                           <Input value={newAddress.zip} onChange={(e) => setNewAddress(prev => ({ ...prev, zip: e.target.value }))} />
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox id="save-addr" checked={saveNewAddress} onCheckedChange={(c) => setSaveNewAddress(c as boolean)} />
-                          <Label htmlFor="save-addr" className="text-sm cursor-pointer">Save this address for future bookings</Label>
-                        </div>
+                        <Button
+                          type="button"
+                          className="w-full mt-2"
+                          disabled={!newAddress.street || !newAddress.city || !newAddress.zip || addAddressMutation.isPending}
+                          onClick={async () => {
+                            try {
+                              const result = await addAddressMutation.mutateAsync({
+                                label: newAddress.label || 'Home',
+                                street: newAddress.street,
+                                city: newAddress.city,
+                                state: newAddress.state || 'TX',
+                                zip: newAddress.zip,
+                                property_type: propertyType,
+                                is_default: addresses.length === 0,
+                                unit: null,
+                              });
+                              setSelectedAddress(result.id);
+                              setUseNewAddress(false);
+                              setNewAddress({ label: '', street: '', city: '', state: '', zip: '' });
+                              toast.success('Address saved');
+                            } catch {
+                              toast.error('Failed to save address');
+                            }
+                          }}
+                        >
+                          {addAddressMutation.isPending ? 'Saving...' : 'Save Address'}
+                        </Button>
                       </div>
                     )}
                   </CardContent>
