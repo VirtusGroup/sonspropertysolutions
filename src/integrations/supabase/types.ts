@@ -17,40 +17,43 @@ export type Database = {
       addresses: {
         Row: {
           city: string
-          created_at: string | null
+          created_at: string
           id: string
-          is_default: boolean | null
+          is_default: boolean
           label: string
           property_type: string
           state: string
           street: string
           unit: string | null
+          updated_at: string | null
           user_id: string
           zip: string
         }
         Insert: {
           city: string
-          created_at?: string | null
+          created_at?: string
           id?: string
-          is_default?: boolean | null
+          is_default?: boolean
           label: string
           property_type: string
           state: string
           street: string
           unit?: string | null
+          updated_at?: string | null
           user_id: string
           zip: string
         }
         Update: {
           city?: string
-          created_at?: string | null
+          created_at?: string
           id?: string
-          is_default?: boolean | null
+          is_default?: boolean
           label?: string
           property_type?: string
           state?: string
           street?: string
           unit?: string | null
+          updated_at?: string | null
           user_id?: string
           zip?: string
         }

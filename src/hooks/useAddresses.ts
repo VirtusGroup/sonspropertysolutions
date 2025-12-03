@@ -14,6 +14,7 @@ export interface Address {
   property_type: 'residential' | 'commercial';
   is_default: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 export function useAddresses() {
@@ -38,7 +39,7 @@ export function useAddresses() {
   });
 
   const addAddress = useMutation({
-    mutationFn: async (address: Omit<Address, 'id' | 'user_id' | 'created_at'>) => {
+    mutationFn: async (address: Omit<Address, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       if (!user) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
