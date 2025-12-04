@@ -17,16 +17,23 @@ const tabs = [
 ];
 
 const authRoutes = ['/login', '/register', '/forgot-password'];
+const fullscreenRoutes = ['/video'];
 
 export function MobileShell({ children }: MobileShellProps) {
   const location = useLocation();
 
   const isAuthPage = authRoutes.includes(location.pathname);
+  const isFullscreenPage = fullscreenRoutes.includes(location.pathname);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
+
+  // On fullscreen pages (like video), render without any shell
+  if (isFullscreenPage) {
+    return <>{children}</>;
+  }
 
   // On auth pages, render without header and nav
   if (isAuthPage) {
