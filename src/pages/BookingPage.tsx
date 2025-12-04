@@ -659,10 +659,12 @@ export default function BookingPage() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Notes <span className="text-destructive">*</span></CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Describe what's going on and where the issue is. Include things like how many stories the property is and any special instructions like gate code, where to park, etc.
+                    </p>
                   </CardHeader>
                   <CardContent>
                     <Textarea 
-                      placeholder="Describe what's going on and where the issue is..." 
                       value={notes} 
                       onChange={handleNotesChange} 
                       rows={4}
