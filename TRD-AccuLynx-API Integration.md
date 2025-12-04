@@ -769,3 +769,17 @@ From `order_photos` table:
 ---
 
 **Next Section:** [Section 5: Webhook Specifications →]
+
+
+Code	Area	Description	When it occurs
+ALX-C001	Contact	Contact creation failed - network error	create-acculynx-contact network/timeout
+ALX-C002	Contact	Contact creation failed - API rejection	AccuLynx API returns error response
+ALX-C003	Contact	Contact creation failed - profile update failed	Contact created but Supabase profile not updated
+ALX-J001	Job	Job sync failed - no contact ID	User missing acculynx_contact_id
+ALX-J002	Job	Job sync failed - order not found	Order ID doesn't exist in database
+ALX-J003	Job	Job sync failed - API rejection	AccuLynx API returns error response
+ALX-J004	Job	Job sync failed - network error	Network/timeout issue
+ALX-P001	Photo	Photo upload failed - no photos found	No photos in database for order
+ALX-P002	Photo	Photo upload failed - storage download error	Can't download from Supabase storage
+ALX-P003	Photo	Photo upload failed - API rejection	AccuLynx API returns error response
+ALX-P004	Photo	Photo upload failed - partial upload
