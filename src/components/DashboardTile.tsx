@@ -61,46 +61,42 @@ export function DashboardTile({
       : "bg-card/90 border border-border backdrop-blur-sm"
   );
 
-  const MotionWrapper = ({ children }: { children: React.ReactNode }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ 
-        delay: index * 0.03,
-        duration: 0.3,
-        ease: [0.25, 0.1, 0.25, 1]
-      }}
-      whileTap={!disabled ? { scale: 0.95 } : undefined}
-    >
-      {children}
-    </motion.div>
-  );
+  const motionProps = {
+    initial: { opacity: 0, y: 20, scale: 0.9 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    transition: { 
+      delay: index * 0.03,
+      duration: 0.3,
+      ease: [0.25, 0.1, 0.25, 1] as const
+    },
+    whileTap: !disabled ? { scale: 0.95 } : undefined,
+  };
 
   if (disabled) {
     return (
-      <MotionWrapper>
+      <motion.div {...motionProps}>
         <div className={className} title="Coming soon">
           {content}
         </div>
-      </MotionWrapper>
+      </motion.div>
     );
   }
 
   if (href) {
     return (
-      <MotionWrapper>
+      <motion.div {...motionProps}>
         <Link to={href} className={className}>
           {content}
         </Link>
-      </MotionWrapper>
+      </motion.div>
     );
   }
 
   return (
-    <MotionWrapper>
+    <motion.div {...motionProps}>
       <button onClick={onClick} className={className}>
         {content}
       </button>
-    </MotionWrapper>
+    </motion.div>
   );
 }
