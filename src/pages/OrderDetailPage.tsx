@@ -10,7 +10,6 @@ import {
   ArrowLeft, 
   MapPin, 
   Calendar, 
-  DollarSign, 
   FileText, 
   Phone, 
   Mail, 
@@ -76,7 +75,6 @@ export default function OrderDetailPage() {
   }
 
   const currentStepIndex = statusSteps.indexOf(order.status);
-  const hasEstimate = order.estimate_low && order.estimate_high && order.estimate_low > 0 && order.estimate_high > 0;
 
   return (
     <div className="flex flex-col min-h-screen pb-6">
@@ -373,43 +371,6 @@ export default function OrderDetailPage() {
                       </p>
                     )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Estimate */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.28, duration: 0.3 }}
-          >
-            <Card className="border-accent/50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  Price Estimate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {hasEstimate ? (
-                  <>
-                    <div className="text-3xl font-bold text-primary mb-2">
-                      ${order.estimate_low} - ${order.estimate_high}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      * Final pricing may change after on-site inspection
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-xl font-semibold text-foreground mb-2">
-                      Custom Quote Required
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      A Sons Roofing representative will contact you with pricing details
-                    </p>
-                  </>
                 )}
               </CardContent>
             </Card>

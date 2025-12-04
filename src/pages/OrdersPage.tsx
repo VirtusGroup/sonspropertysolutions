@@ -107,7 +107,8 @@ export default function OrdersPage() {
             <div className="flex items-center justify-center min-h-[40vh]">
               {renderEmptyState()}
             </div>
-          ) : (
+          ) : activeTab === 'active' ? (
+            // Active orders - Card view
             <div className="space-y-4">
               {displayedOrders.map((order, index) => {
                 const service = services.find((s) => s.id === order.service_id);
@@ -137,7 +138,7 @@ export default function OrdersPage() {
                               <p className="text-sm font-mono text-primary">#{order.job_ref}</p>
                               {address && (
                                 <div className="flex items-center text-sm text-muted-foreground gap-1 mt-1">
-                                  <MapPin className="h-3 w-3" />
+                                  <MapPin className="h-3 w-3 flex-shrink-0" />
                                   <span>{address.street}, {address.city}</span>
                                 </div>
                               )}
@@ -158,18 +159,43 @@ export default function OrdersPage() {
                               </span>
                             </div>
                           )}
-                          <div className="flex items-center justify-between text-sm pt-2 border-t">
-                            <span className="text-muted-foreground">Estimate</span>
-                            {order.estimate_low && order.estimate_high ? (
-                              <span className="font-semibold text-primary">
-                                ${order.estimate_low} - ${order.estimate_high}
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground italic">Custom quote</span>
-                            )}
-                          </div>
                         </CardContent>
                       </Card>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          ) : (
+            // Past orders - List view
+            <div className="bg-card rounded-lg border divide-y">
+              {displayedOrders.map((order, index) => {
+                const service = services.find((s) => s.id === order.service_id);
+
+                if (!service) return null;
+
+                return (
+                  <motion.div
+                    key={order.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ 
+                      delay: index * 0.03,
+                      duration: 0.2,
+                      ease: [0.25, 0.1, 0.25, 1]
+                    }}
+                  >
+                    <Link 
+                      to={`/orders/${order.id}`}
+                      className="flex items-center justify-between px-4 py-3 active:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex-1 min-w-0 mr-3">
+                        <p className="font-medium truncate">{service.title}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(order.created_at), 'MMM d, yyyy')}
+                        </p>
+                      </div>
+                      <StatusBadge status={order.status} />
                     </Link>
                   </motion.div>
                 );
