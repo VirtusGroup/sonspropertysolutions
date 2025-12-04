@@ -18,6 +18,7 @@ import AccountPage from "./pages/AccountPage";
 import SupportPage from "./pages/SupportPage";
 import ContactPage from "./pages/ContactPage";
 import InstallPage from "./pages/InstallPage";
+import EstimatorPage from "./pages/EstimatorPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -82,6 +83,7 @@ function AnimatedRoutes() {
         <Route path="/support" element={<PageTransition><SupportPage /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
         <Route path="/install" element={<PageTransition><InstallPage /></PageTransition>} />
+        <Route path="/estimator" element={<PageTransition><EstimatorPage /></PageTransition>} />
         <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
         <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
         <Route path="/forgot-password" element={<PageTransition><ForgotPasswordPage /></PageTransition>} />

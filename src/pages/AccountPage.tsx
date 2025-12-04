@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,7 @@ type PropertyType = 'residential' | 'commercial';
 export default function AccountPage() {
   const { user, profile, signOut, updateProfile } = useAuth();
   const { addresses, addAddress, deleteAddress } = useAddresses();
+  const location = useLocation();
   const [editingProfile, setEditingProfile] = useState(false);
   const [addingAddress, setAddingAddress] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
@@ -28,6 +30,19 @@ export default function AccountPage() {
   const [lastName, setLastName] = useState(profile?.last_name || '');
   const [phone, setPhone] = useState(profile?.phone || '');
   const [newAddressPropertyType, setNewAddressPropertyType] = useState<PropertyType>('residential');
+
+  // Auto-scroll to section based on hash
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    }
+  }, [location.hash]);
 
   const handleSaveProfile = async () => {
     const { error } = await updateProfile({ first_name: firstName, last_name: lastName, phone });
@@ -117,7 +132,7 @@ export default function AccountPage() {
       <div className="flex-1 px-4 pt-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile */}
-          <Card>
+          <Card id="addresses">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2"><User className="h-5 w-5" /><CardTitle>Profile</CardTitle></div>
@@ -177,7 +192,7 @@ export default function AccountPage() {
           </Card>
 
           {/* Notifications */}
-          <Card>
+          <Card id="referrals">
             <CardHeader><div className="flex items-center gap-2"><Bell className="h-5 w-5" /><CardTitle>Notifications</CardTitle></div></CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
