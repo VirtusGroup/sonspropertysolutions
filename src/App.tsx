@@ -8,6 +8,11 @@ import { MobileShell } from "@/components/layout/MobileShell";
 import { PageTransition } from "@/components/PageTransition";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
+
+// Disable browser's automatic scroll restoration globally
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
 import HomePage from "./pages/HomePage";
 import ServicesPage from "./pages/ServicesPage";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
@@ -67,29 +72,6 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function ScrollToTop() {
-  const { pathname, hash } = useLocation();
-  
-  useEffect(() => {
-    // Disable browser's automatic scroll restoration
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual';
-    }
-  }, []);
-  
-  useEffect(() => {
-    // Don't scroll to top if there's a hash anchor
-    if (!hash) {
-      // Use requestAnimationFrame to ensure scroll happens after render
-      requestAnimationFrame(() => {
-        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-      });
-    }
-  }, [pathname, hash]);
-  
-  return null;
-}
-
 function AnimatedRoutes() {
   const location = useLocation();
   
@@ -122,8 +104,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <ScrollToTop />
+<BrowserRouter>
           <MobileShell>
             <AuthGuard>
               <AnimatedRoutes />
