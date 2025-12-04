@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useOrders, CreateOrderInput } from '@/hooks/useOrders';
 import { usePhotoUpload } from '@/hooks/usePhotoUpload';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -71,7 +72,7 @@ export default function BookingPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { services } = useStore();
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { addresses, addAddress: addAddressMutation } = useAddresses();
   const { createOrder } = useOrders();
   const { uploadPhoto, savePhotoRecord } = usePhotoUpload();
@@ -80,6 +81,7 @@ export default function BookingPage() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingContact, setIsCreatingContact] = useState(false);
   
   // Property Type (Step 1)
   const [propertyType, setPropertyType] = useState<PropertyType>('residential');
@@ -192,6 +194,43 @@ export default function BookingPage() {
 
   const handleNext = async () => {
     if (currentStep < 6 && canProceed()) {
+      // When leaving Contact step (step 3), create AccuLynx contact if not exists
+      if (currentStep === 3 && !profile?.acculynx_contact_id) {
+        setIsCreatingContact(true);
+        try {
+          const address = addresses.find(a => a.id === selectedAddress);
+          const { data, error } = await supabase.functions.invoke('create-acculynx-contact', {
+            body: {
+              userId: user!.id,
+              firstName: contactFirstName,
+              lastName: contactLastName,
+              email: contactEmail,
+              phone: contactPhone,
+              address: address ? {
+                street: address.street,
+                city: address.city,
+                state: address.state,
+                zip: address.zip
+              } : null
+            }
+          });
+          
+          if (error) {
+            console.error('Failed to create AccuLynx contact:', error);
+            // Continue anyway - don't block the user
+          } else {
+            console.log('AccuLynx contact created:', data?.contactId);
+            // Refresh profile to get the new contact ID
+            await refreshProfile();
+          }
+        } catch (err) {
+          console.error('Error creating AccuLynx contact:', err);
+          // Continue anyway - don't block the user
+        } finally {
+          setIsCreatingContact(false);
+        }
+      }
+      
       setCurrentStep(currentStep + 1);
     }
   };
@@ -273,13 +312,26 @@ export default function BookingPage() {
 
       const order = await createOrder.mutateAsync(orderInput);
 
-      // Upload photos
+      // Upload photos to Supabase Storage
       for (const photo of photos) {
         const result = await uploadPhoto(photo.file);
         if (result) {
           await savePhotoRecord(order.id, result.path, photo.file);
         }
       }
+
+      // Sync to AccuLynx (non-blocking)
+      supabase.functions.invoke('sync-order-to-acculynx', {
+        body: { orderId: order.id }
+      }).then(({ data, error }) => {
+        if (error) {
+          console.error('AccuLynx sync error:', error);
+        } else {
+          console.log('AccuLynx sync initiated:', data);
+        }
+      }).catch(err => {
+        console.error('AccuLynx sync failed:', err);
+      });
 
       setConfirmedJobRef(order.job_ref);
       setConfirmedOrderId(order.id);
@@ -753,8 +805,13 @@ export default function BookingPage() {
             </Button>
           )}
           {currentStep < 6 ? (
-            <Button onClick={handleNext} disabled={!canProceed()} className="flex-1">
-              Next <ArrowRight className="w-4 h-4 ml-2" />
+            <Button 
+              onClick={handleNext} 
+              disabled={!canProceed() || isCreatingContact} 
+              className="flex-1"
+            >
+              {isCreatingContact ? 'Setting up...' : 'Next'} 
+              {!isCreatingContact && <ArrowRight className="w-4 h-4 ml-2" />}
             </Button>
           ) : (
             <Button onClick={handleSubmit} disabled={isSubmitting} className="flex-1">

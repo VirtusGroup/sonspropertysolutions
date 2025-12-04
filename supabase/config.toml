@@ -1,1 +1,7 @@
 project_id = "ahkatopdqmoizcejpubu"
+
+[functions.create-acculynx-contact]
+verify_jwt = false
+
+[functions.sync-order-to-acculynx]
+verify_jwt = false

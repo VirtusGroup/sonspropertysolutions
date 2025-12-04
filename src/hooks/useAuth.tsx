@@ -16,6 +16,7 @@ interface Profile {
   terms_accepted_at: string | null;
   created_at: string;
   updated_at: string | null;
+  acculynx_contact_id: string | null;
 }
 
 interface AuthContextType {
