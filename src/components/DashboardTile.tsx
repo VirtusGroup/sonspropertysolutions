@@ -39,13 +39,19 @@ export function DashboardTile({
         )} />
         {badge !== undefined && badge > 0 && (
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: index * 0.03 + 0.2, type: 'spring', stiffness: 500 }}
+            className="absolute -top-1 -right-1"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ 
+              delay: index * 0.03 + 0.2, 
+              type: 'spring', 
+              stiffness: 500,
+              damping: 15 
+            }}
           >
             <Badge 
               variant="secondary" 
-              className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-accent text-accent-foreground"
+              className="h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-accent text-accent-foreground"
             >
               {badge > 9 ? '9+' : badge}
             </Badge>

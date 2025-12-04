@@ -67,6 +67,19 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function ScrollToTop() {
+  const { pathname, hash } = useLocation();
+  
+  useEffect(() => {
+    // Don't scroll to top if there's a hash anchor
+    if (!hash) {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, hash]);
+  
+  return null;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
   
@@ -100,6 +113,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ScrollToTop />
           <MobileShell>
             <AuthGuard>
               <AnimatedRoutes />
