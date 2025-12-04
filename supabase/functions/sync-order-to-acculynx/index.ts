@@ -9,6 +9,7 @@ const corsHeaders = {
 
 const ACCULYNX_API_BASE = 'https://api.acculynx.com/api/v2';
 const ACCULYNX_SOURCE_ID = '4d3ff3bd-6685-45ba-8209-951b30adc9a6';
+const ACCULYNX_CONTACT_TYPE_ID = '52ba94c5-3ecf-4e7f-90cd-a91de12a72f5';
 
 // Trade type mapping by category
 const CATEGORY_TO_TRADE_TYPE: Record<string, string> = {
@@ -20,6 +21,48 @@ const CATEGORY_TO_TRADE_TYPE: Record<string, string> = {
 
 function getTradeTypeFromCategory(category: string): string {
   return CATEGORY_TO_TRADE_TYPE[category] || CATEGORY_TO_TRADE_TYPE.roofing;
+}
+
+async function createAccuLynxContact(
+  acculynxApiKey: string,
+  firstName: string,
+  lastName: string,
+  email: string,
+  phone: string
+): Promise<{ contactId?: string; error?: string }> {
+  console.log('[sync-order] Creating fallback AccuLynx contact for:', { firstName, lastName, email });
+  
+  const contactPayload = {
+    firstName,
+    lastName,
+    contactTypeIds: [ACCULYNX_CONTACT_TYPE_ID],
+    phoneNumbers: phone ? [{ number: phone, type: 'Mobile' }] : [],
+    emailAddresses: email ? [{ address: email, type: 'Personal' }] : []
+  };
+
+  try {
+    const response = await fetch(`${ACCULYNX_API_BASE}/contacts`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${acculynxApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(contactPayload),
+    });
+
+    const responseText = await response.text();
+    console.log('[sync-order] AccuLynx contact creation response:', response.status, responseText);
+
+    if (!response.ok) {
+      return { error: `AccuLynx contact creation failed: ${responseText}` };
+    }
+
+    const data = JSON.parse(responseText);
+    return { contactId: data.id };
+  } catch (err) {
+    console.error('[sync-order] AccuLynx contact creation error:', err);
+    return { error: err instanceof Error ? err.message : 'Unknown error' };
+  }
 }
 
 async function updateSyncStatus(
@@ -106,13 +149,54 @@ serve(async (req) => {
       );
     }
 
-    if (!profile.acculynx_contact_id) {
-      console.error('No AccuLynx contact ID for user');
-      await updateSyncStatus(supabaseUrl, supabaseServiceKey, orderId, 'failed', 'No AccuLynx contact ID');
-      return new Response(
-        JSON.stringify({ error: true, code: 'ALX-J001', message: 'No AccuLynx contact ID for user' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    let contactId = profile.acculynx_contact_id;
+    
+    // Fallback: Create contact if missing
+    if (!contactId) {
+      console.log('[sync-order] No AccuLynx contact ID - attempting fallback creation');
+      
+      // Fetch full profile for contact creation
+      const { data: fullProfile, error: fullProfileError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, email, phone')
+        .eq('id', order.user_id)
+        .single();
+      
+      if (fullProfileError || !fullProfile) {
+        console.error('[sync-order] Failed to fetch full profile for contact creation:', fullProfileError);
+        await updateSyncStatus(supabaseUrl, supabaseServiceKey, orderId, 'failed', 'Could not fetch profile for contact creation');
+        return new Response(
+          JSON.stringify({ error: true, code: 'ALX-J001', message: 'Could not create contact - profile not found' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      const { contactId: newContactId, error: contactError } = await createAccuLynxContact(
+        acculynxApiKey,
+        fullProfile.first_name || order.contact_first_name,
+        fullProfile.last_name || order.contact_last_name,
+        fullProfile.email || order.contact_email,
+        fullProfile.phone || order.contact_phone
       );
+      
+      if (contactError || !newContactId) {
+        console.error('[sync-order] Fallback contact creation failed:', contactError);
+        await updateSyncStatus(supabaseUrl, supabaseServiceKey, orderId, 'failed', contactError || 'Contact creation failed');
+        return new Response(
+          JSON.stringify({ error: true, code: 'ALX-J001', message: 'Failed to create AccuLynx contact' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      console.log('[sync-order] Fallback contact created:', newContactId);
+      
+      // Update profile with new contact ID
+      await supabase
+        .from('profiles')
+        .update({ acculynx_contact_id: newContactId })
+        .eq('id', order.user_id);
+      
+      contactId = newContactId;
     }
 
     // Get address from order or snapshot
@@ -154,7 +238,7 @@ serve(async (req) => {
     
     const jobPayload = {
       contact: {
-        id: profile.acculynx_contact_id
+        id: contactId
       },
       leadSource: {
         id: ACCULYNX_SOURCE_ID
@@ -218,7 +302,7 @@ serve(async (req) => {
       .from('orders')
       .update({
         acculynx_job_id: acculynxJobId,
-        acculynx_contact_id: profile.acculynx_contact_id,
+        acculynx_contact_id: contactId,
         sync_status: 'pending_photo_upload',
         last_sync_at: new Date().toISOString()
       })
