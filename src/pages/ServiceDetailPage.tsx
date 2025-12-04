@@ -1,21 +1,10 @@
-import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, CheckCircle2, XCircle, Home, Building2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, Home, Building2, CalendarCheck } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import { estimatePrice } from '@/lib/estimator';
 import { ServiceCategory } from '@/types';
 
 const categoryLabels: Record<ServiceCategory, string> = {
@@ -31,9 +20,6 @@ export default function ServiceDetailPage() {
   const { services } = useStore();
   
   const service = services.find((s) => s.slug === slug);
-
-  const [roofType, setRoofType] = useState('asphalt');
-  const [stories, setStories] = useState(1);
 
   if (!service) {
     return (
@@ -53,24 +39,16 @@ export default function ServiceDetailPage() {
     );
   }
 
-  const [estimateLow, estimateHigh] = estimatePrice({
-    service,
-    quantity: 1,
-    roofType,
-    stories,
-    addonIds: [],
-  });
-
-  const handleBookNow = () => {
+  const handleSchedule = () => {
     navigate('/book', {
       state: {
         serviceId: service.id,
         quantity: 1,
-        roofType,
-        stories,
+        roofType: 'asphalt',
+        stories: 1,
         addonIds: [],
-        estimateLow,
-        estimateHigh,
+        estimateLow: 0,
+        estimateHigh: 0,
       },
     });
   };
@@ -169,76 +147,23 @@ export default function ServiceDetailPage() {
             </Card>
           </motion.div>
 
-          {/* Get a Quote */}
+          {/* Schedule Your Appointment */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
             <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle>Get a Quote</CardTitle>
-                <CardDescription>
-                  Get your quote ASAP!
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {service.category === 'roofing' && (
-                  <>
-                    <div className="space-y-2">
-                      <Label>Roof Type</Label>
-                      <Select value={roofType} onValueChange={setRoofType}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="asphalt">Asphalt Shingles</SelectItem>
-                          <SelectItem value="metal">Metal</SelectItem>
-                          <SelectItem value="tile">Tile</SelectItem>
-                          <SelectItem value="slate">Slate</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Number of Stories</Label>
-                      <Select
-                        value={stories.toString()}
-                        onValueChange={(val) => setStories(Number(val))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1 Story</SelectItem>
-                          <SelectItem value="2">2 Stories</SelectItem>
-                          <SelectItem value="3">3 Stories</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </>
-                )}
-
-                <Separator />
-
-                {/* Estimate Display */}
-                <div className="bg-accent/10 p-4 rounded-lg">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-muted-foreground">Estimated Price Range</span>
-                  </div>
-                  <div className="text-3xl font-bold text-primary">
-                    ${estimateLow} - ${estimateHigh}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    * Final pricing may change after on-site inspection
-                  </p>
-                </div>
-
+              <CardContent className="pt-6 space-y-4">
                 <motion.div whileTap={{ scale: 0.98 }}>
-                  <Button onClick={handleBookNow} size="lg" className="w-full">
-                    Get Your Quote
+                  <Button onClick={handleSchedule} size="lg" className="w-full">
+                    <CalendarCheck className="h-5 w-5 mr-2" />
+                    Schedule Your Appointment
                   </Button>
                 </motion.div>
+                <p className="text-sm text-muted-foreground text-center">
+                  Once you schedule, someone from our team will reach out to confirm your appointment.
+                </p>
               </CardContent>
             </Card>
           </motion.div>

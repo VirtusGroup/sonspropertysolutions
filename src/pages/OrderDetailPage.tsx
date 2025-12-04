@@ -31,7 +31,7 @@ const statusSteps: OrderStatus[] = ['received', 'scheduled', 'in_progress', 'job
 const statusLabels: Record<OrderStatus, string> = {
   received: 'Received',
   scheduled: 'Scheduled',
-  in_progress: 'Job In Progress',
+  in_progress: 'In Progress',
   job_complete: 'Job Complete',
   finished: 'Finished',
   cancelled: 'Cancelled',
@@ -130,64 +130,65 @@ export default function OrderDetailPage() {
 
       <div className="flex-1 px-4 py-6">
         <div className="max-w-4xl mx-auto space-y-6">
-          {/* Timeline */}
+          {/* Horizontal Timeline */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.3 }}
           >
             <Card>
-              <CardHeader>
+              <CardHeader className="pb-2">
                 <CardTitle>Order Timeline</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="flex items-center justify-between relative pt-6 pb-2 overflow-x-auto">
                   {statusSteps.map((step, index) => {
                     const isCompleted = index <= currentStepIndex;
                     const isCurrent = index === currentStepIndex;
+                    const isAbove = index % 2 === 0;
 
                     return (
-                      <div key={step} className="flex items-start gap-4">
-                        <div className="flex flex-col items-center">
-                          <div
-                            className={`rounded-full h-10 w-10 flex items-center justify-center border-2 ${
-                              isCompleted
-                                ? 'bg-primary border-primary text-primary-foreground'
-                                : 'border-muted bg-background text-muted-foreground'
-                            }`}
-                          >
-                            {index + 1}
-                          </div>
-                          {index < statusSteps.length - 1 && (
+                      <div key={step} className="flex flex-col items-center relative flex-1 min-w-[60px]">
+                        {/* Label - alternating above/below */}
+                        <span
+                          className={`text-xs text-center whitespace-nowrap absolute ${
+                            isAbove ? '-top-6' : 'top-12'
+                          } ${
+                            isCompleted ? 'text-foreground font-medium' : 'text-muted-foreground'
+                          }`}
+                        >
+                          {statusLabels[step]}
+                        </span>
+
+                        {/* Circle and line container */}
+                        <div className="flex items-center w-full">
+                          {/* Line before (except first) */}
+                          {index > 0 && (
                             <div
-                              className={`w-0.5 h-12 ${
-                                isCompleted ? 'bg-primary' : 'bg-muted'
+                              className={`h-0.5 flex-1 ${
+                                index <= currentStepIndex ? 'bg-primary' : 'bg-muted'
                               }`}
                             />
                           )}
-                        </div>
-                        <div className="flex-1 pb-4">
-                          <p
-                            className={`font-medium ${
-                              isCompleted ? 'text-foreground' : 'text-muted-foreground'
-                            }`}
+
+                          {/* Circle */}
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border-2 z-10 ${
+                              isCompleted
+                                ? 'bg-primary border-primary text-primary-foreground'
+                                : 'border-muted bg-background text-muted-foreground'
+                            } ${isCurrent ? 'ring-2 ring-primary/30' : ''}`}
                           >
-                            {statusLabels[step]}
-                          </p>
-                          {isCurrent && order.status === 'scheduled' && order.scheduled_at && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {format(new Date(order.scheduled_at), 'EEEE, MMM d @ h:mm a')}
-                            </p>
-                          )}
-                          {step === 'received' && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {format(new Date(order.created_at), 'MMM d, h:mm a')}
-                            </p>
-                          )}
-                          {step === 'finished' && order.completed_at && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {format(new Date(order.completed_at), 'MMM d, h:mm a')}
-                            </p>
+                            <span className="text-xs font-medium">{index + 1}</span>
+                          </div>
+
+                          {/* Line after (except last) */}
+                          {index < statusSteps.length - 1 && (
+                            <div
+                              className={`h-0.5 flex-1 ${
+                                index < currentStepIndex ? 'bg-primary' : 'bg-muted'
+                              }`}
+                            />
                           )}
                         </div>
                       </div>

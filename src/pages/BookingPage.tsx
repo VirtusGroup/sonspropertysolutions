@@ -111,6 +111,9 @@ export default function BookingPage() {
 
   const service = bookingState ? services.find(s => s.id === bookingState.serviceId) : null;
 
+  // Filter addresses by property type
+  const filteredAddresses = addresses.filter(a => a.property_type === propertyType);
+
   // Check auth on mount
   useEffect(() => {
     if (!user) {
@@ -137,16 +140,18 @@ export default function BookingPage() {
     }
   }, [profile, user]);
 
-  // Set default address
+  // Set default address when property type changes
   useEffect(() => {
-    if (addresses.length && !selectedAddress) {
-      const primary = addresses.find(a => a.is_default);
-      if (primary) {
-        setSelectedAddress(primary.id);
-        setPropertyType(primary.property_type);
-      }
+    const matchingAddresses = addresses.filter(a => a.property_type === propertyType);
+    if (matchingAddresses.length) {
+      const primary = matchingAddresses.find(a => a.is_default) || matchingAddresses[0];
+      setSelectedAddress(primary.id);
+      setUseNewAddress(false);
+    } else {
+      setSelectedAddress('');
+      setUseNewAddress(true);
     }
-  }, [addresses, selectedAddress]);
+  }, [addresses, propertyType]);
 
   if (!bookingState || !service || !user) {
     return null;
@@ -157,7 +162,7 @@ export default function BookingPage() {
       case 1: return !!propertyType;
       case 2: return !!selectedAddress;
       case 3: return contactFirstName && contactLastName && contactEmail && contactPhone;
-      case 4: return true;
+      case 4: return notes.trim().length > 0; // Notes are required
       case 5: return preferredDate && timeWindow;
       case 6: return true;
       default: return false;
@@ -243,8 +248,6 @@ export default function BookingPage() {
         contact_phone: contactPhone,
         preferred_window: `${TIME_WINDOWS.find(w => w.id === timeWindow)?.label} (${TIME_WINDOWS.find(w => w.id === timeWindow)?.time})`,
         notes: notes || undefined,
-        estimate_low: bookingState.estimateLow || undefined,
-        estimate_high: bookingState.estimateHigh || undefined,
         scheduled_at: preferredDate || undefined,
       };
 
@@ -286,8 +289,6 @@ export default function BookingPage() {
       setUseNewAddress(false);
     }
   };
-
-  const hasEstimate = bookingState.estimateLow > 0 && bookingState.estimateHigh > 0;
 
   // Confirmation Screen
   if (isConfirmed) {
@@ -472,9 +473,12 @@ export default function BookingPage() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Service Location</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Showing {propertyType} addresses only
+                    </p>
                   </CardHeader>
                   <CardContent>
-                    {addresses.length ? (
+                    {filteredAddresses.length ? (
                       <RadioGroup value={useNewAddress ? 'new' : selectedAddress} onValueChange={(val) => {
                         if (val === 'new') {
                           setUseNewAddress(true);
@@ -482,7 +486,7 @@ export default function BookingPage() {
                           handleAddressSelect(val);
                         }
                       }}>
-                        {addresses.map(addr => (
+                        {filteredAddresses.map(addr => (
                           <div key={addr.id} className="flex items-start space-x-3 p-3 rounded-lg border border-border mb-2">
                             <RadioGroupItem value={addr.id} id={addr.id} className="mt-1" />
                             <Label htmlFor={addr.id} className="flex-1 cursor-pointer">
@@ -506,15 +510,15 @@ export default function BookingPage() {
                           <RadioGroupItem value="new" id="new-addr" />
                           <Label htmlFor="new-addr" className="flex items-center gap-2 cursor-pointer">
                             <Plus className="h-4 w-4" />
-                            <span>Add new address</span>
+                            <span>Add new {propertyType} address</span>
                           </Label>
                         </div>
                       </RadioGroup>
                     ) : (
-                      <p className="text-muted-foreground mb-4">No saved addresses. Add one below.</p>
+                      <p className="text-muted-foreground mb-4">No saved {propertyType} addresses. Add one below.</p>
                     )}
                     
-                    {(useNewAddress || !addresses.length) && (
+                    {(useNewAddress || !filteredAddresses.length) && (
                       <div className="mt-4 space-y-3">
                         <div className="space-y-2">
                           <Label>Address Label</Label>
@@ -633,10 +637,19 @@ export default function BookingPage() {
                 </Card>
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Notes</CardTitle>
+                    <CardTitle className="text-base">Notes <span className="text-destructive">*</span></CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Textarea placeholder="Describe what's going on and where the issue is..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} />
+                    <Textarea 
+                      placeholder="Describe what's going on and where the issue is..." 
+                      value={notes} 
+                      onChange={(e) => setNotes(e.target.value)} 
+                      rows={4}
+                      className={!notes.trim() ? 'border-destructive/50' : ''}
+                    />
+                    {!notes.trim() && (
+                      <p className="text-xs text-destructive mt-2">Notes are required to proceed</p>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -704,13 +717,6 @@ export default function BookingPage() {
                       <div><p className="text-sm text-muted-foreground">Preferred Date</p><p className="font-medium">{preferredDate || 'Not set'}</p><p className="text-sm text-muted-foreground">{TIME_WINDOWS.find(w => w.id === timeWindow)?.label} ({TIME_WINDOWS.find(w => w.id === timeWindow)?.time})</p></div>
                       <Button variant="ghost" size="sm" onClick={() => setCurrentStep(5)}><Pencil className="w-3 h-3" /></Button>
                     </div>
-                    {hasEstimate && (
-                      <div className="pt-4 border-t">
-                        <p className="text-sm text-muted-foreground">Estimated Cost</p>
-                        <p className="text-2xl font-bold text-primary">${bookingState.estimateLow} - ${bookingState.estimateHigh}</p>
-                        <p className="text-xs text-muted-foreground">Final price may vary based on inspection</p>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               </div>
