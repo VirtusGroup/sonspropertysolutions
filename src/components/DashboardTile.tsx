@@ -23,6 +23,7 @@ export function DashboardTile({
   badge,
   disabled = false,
   variant = 'default',
+  index = 0,
 }: DashboardTileProps) {
   const content = (
     <>
@@ -60,29 +61,46 @@ export function DashboardTile({
       : "bg-card/90 border border-border backdrop-blur-sm"
   );
 
+  const MotionWrapper = ({ children }: { children: React.ReactNode }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ 
+        delay: index * 0.03,
+        duration: 0.3,
+        ease: [0.25, 0.1, 0.25, 1]
+      }}
+      whileTap={!disabled ? { scale: 0.95 } : undefined}
+    >
+      {children}
+    </motion.div>
+  );
+
   if (disabled) {
     return (
-      <div className={className} title="Coming soon">
-        {content}
-      </div>
+      <MotionWrapper>
+        <div className={className} title="Coming soon">
+          {content}
+        </div>
+      </MotionWrapper>
     );
   }
 
   if (href) {
     return (
-      <motion.div whileTap={{ scale: 0.95 }}>
+      <MotionWrapper>
         <Link to={href} className={className}>
           {content}
         </Link>
-      </motion.div>
+      </MotionWrapper>
     );
   }
 
   return (
-    <motion.div whileTap={{ scale: 0.95 }}>
+    <MotionWrapper>
       <button onClick={onClick} className={className}>
         {content}
       </button>
-    </motion.div>
+    </MotionWrapper>
   );
 }
