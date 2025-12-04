@@ -62,7 +62,7 @@ serve(async (req) => {
 
   try {
     const { orderId } = await req.json();
-    console.log('Syncing order to AccuLynx:', orderId);
+    console.log('Syncing order to AccuLynx (job creation only):', orderId);
 
     const acculynxApiKey = Deno.env.get('ACCULYNX_API_KEY');
     if (!acculynxApiKey) {
@@ -179,7 +179,7 @@ serve(async (req) => {
 
     console.log('AccuLynx job created:', acculynxJobId);
 
-    // Update order with job ID
+    // Update order with job ID and set status to pending_photo_upload
     await supabase
       .from('orders')
       .update({
@@ -190,92 +190,12 @@ serve(async (req) => {
       })
       .eq('id', orderId);
 
-    // Upload photos
-    const { data: photos } = await supabase
-      .from('order_photos')
-      .select('*')
-      .eq('order_id', orderId)
-      .eq('uploaded_to_acculynx', false);
-
-    let photosUploaded = 0;
-    let photoErrors = 0;
-
-    if (photos && photos.length > 0) {
-      console.log(`Uploading ${photos.length} photos to AccuLynx`);
-
-      for (const photo of photos) {
-        try {
-          // Download from Supabase Storage
-          const { data: fileData, error: downloadError } = await supabase.storage
-            .from('order-photos')
-            .download(photo.storage_path);
-
-          if (downloadError || !fileData) {
-            console.error(`Failed to download photo ${photo.id}:`, downloadError);
-            photoErrors++;
-            continue;
-          }
-
-          // Create form data for upload
-          const formData = new FormData();
-          formData.append('file', fileData, photo.file_name || 'photo.jpg');
-          formData.append('description', `Photo for ${order.job_ref}`);
-
-          // Upload to AccuLynx
-          const photoResponse = await fetch(
-            `${ACCULYNX_API_BASE}/jobs/${acculynxJobId}/photos-videos`,
-            {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${acculynxApiKey}`,
-              },
-              body: formData,
-            }
-          );
-
-          if (photoResponse.ok) {
-            const photoData = await photoResponse.json();
-            
-            // Mark as uploaded
-            await supabase
-              .from('order_photos')
-              .update({
-                uploaded_to_acculynx: true,
-                acculynx_file_id: photoData.id
-              })
-              .eq('id', photo.id);
-
-            photosUploaded++;
-            console.log(`Photo ${photo.id} uploaded successfully`);
-          } else {
-            const errorText = await photoResponse.text();
-            console.error(`Failed to upload photo ${photo.id}:`, errorText);
-            photoErrors++;
-          }
-        } catch (photoError) {
-          console.error(`Error uploading photo ${photo.id}:`, photoError);
-          photoErrors++;
-        }
-      }
-    }
-
-    // Update final sync status
-    await supabase
-      .from('orders')
-      .update({
-        sync_status: 'submitted',
-        last_sync_at: new Date().toISOString()
-      })
-      .eq('id', orderId);
-
-    console.log(`Sync complete. Job: ${acculynxJobId}, Photos uploaded: ${photosUploaded}, Photo errors: ${photoErrors}`);
+    console.log(`Job creation complete. Job ID: ${acculynxJobId}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        acculynxJobId,
-        photosUploaded,
-        photoErrors
+        acculynxJobId
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

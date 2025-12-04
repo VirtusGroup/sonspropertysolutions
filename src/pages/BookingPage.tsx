@@ -320,14 +320,27 @@ export default function BookingPage() {
         }
       }
 
-      // Sync to AccuLynx (non-blocking)
+      // Sync to AccuLynx: 1) Create job, 2) Upload photos (chained, non-blocking)
       supabase.functions.invoke('sync-order-to-acculynx', {
         body: { orderId: order.id }
-      }).then(({ data, error }) => {
+      }).then(async ({ data, error }) => {
         if (error) {
-          console.error('AccuLynx sync error:', error);
-        } else {
-          console.log('AccuLynx sync initiated:', data);
+          console.error('AccuLynx job sync error:', error);
+          return;
+        }
+        console.log('AccuLynx job created:', data);
+        
+        // If job was created and we have photos, upload them
+        if (data?.acculynxJobId && photos.length > 0) {
+          const { data: photoData, error: photoError } = await supabase.functions.invoke('upload-photos-to-acculynx', {
+            body: { orderId: order.id, acculynxJobId: data.acculynxJobId }
+          });
+          
+          if (photoError) {
+            console.error('AccuLynx photo upload error:', photoError);
+          } else {
+            console.log('AccuLynx photos uploaded:', photoData);
+          }
         }
       }).catch(err => {
         console.error('AccuLynx sync failed:', err);
