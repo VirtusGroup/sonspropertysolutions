@@ -26,7 +26,7 @@ serve(async (req) => {
     if (!acculynxApiKey) {
       console.error('ACCULYNX_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'AccuLynx API key not configured' }),
+        JSON.stringify({ error: true, code: 'ALX-C001', message: 'AccuLynx API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -62,14 +62,23 @@ serve(async (req) => {
     console.log('Sending to AccuLynx:', JSON.stringify(contactPayload));
 
     // Create contact in AccuLynx
-    const acculynxResponse = await fetch(`${ACCULYNX_API_BASE}/contacts`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${acculynxApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(contactPayload),
-    });
+    let acculynxResponse;
+    try {
+      acculynxResponse = await fetch(`${ACCULYNX_API_BASE}/contacts`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${acculynxApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactPayload),
+      });
+    } catch (fetchError) {
+      console.error('Network error calling AccuLynx:', fetchError);
+      return new Response(
+        JSON.stringify({ error: true, code: 'ALX-C001', message: 'Network error connecting to AccuLynx' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const responseText = await acculynxResponse.text();
     console.log('AccuLynx response status:', acculynxResponse.status);
@@ -78,7 +87,7 @@ serve(async (req) => {
     if (!acculynxResponse.ok) {
       console.error('AccuLynx API error:', responseText);
       return new Response(
-        JSON.stringify({ error: 'Failed to create contact in AccuLynx', details: responseText }),
+        JSON.stringify({ error: true, code: 'ALX-C002', message: 'AccuLynx rejected the contact', details: responseText }),
         { status: acculynxResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -101,9 +110,8 @@ serve(async (req) => {
     if (updateError) {
       console.error('Failed to update profile:', updateError);
       // Contact was created in AccuLynx but we failed to save the ID
-      // Return success but log the error
       return new Response(
-        JSON.stringify({ contactId, warning: 'Contact created but failed to save to profile' }),
+        JSON.stringify({ error: true, code: 'ALX-C003', contactId, message: 'Contact created but failed to save to profile' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -111,7 +119,7 @@ serve(async (req) => {
     console.log('Profile updated with AccuLynx contact ID');
 
     return new Response(
-      JSON.stringify({ contactId }),
+      JSON.stringify({ success: true, contactId }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
@@ -119,7 +127,7 @@ serve(async (req) => {
     console.error('Error in create-acculynx-contact:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: true, code: 'ALX-C001', message: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

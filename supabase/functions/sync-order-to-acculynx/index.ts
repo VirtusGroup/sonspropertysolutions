@@ -68,7 +68,7 @@ serve(async (req) => {
     if (!acculynxApiKey) {
       console.error('ACCULYNX_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'AccuLynx API key not configured' }),
+        JSON.stringify({ error: true, code: 'ALX-J004', message: 'AccuLynx API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -83,7 +83,7 @@ serve(async (req) => {
     if (orderError || !order) {
       console.error('Failed to fetch order:', orderError);
       return new Response(
-        JSON.stringify({ error: 'Order not found' }),
+        JSON.stringify({ error: true, code: 'ALX-J002', message: 'Order not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -101,7 +101,7 @@ serve(async (req) => {
       console.error('Failed to fetch profile:', profileError);
       await updateSyncStatus(supabaseUrl, supabaseServiceKey, orderId, 'failed', 'Profile not found');
       return new Response(
-        JSON.stringify({ error: 'Profile not found' }),
+        JSON.stringify({ error: true, code: 'ALX-J001', message: 'Profile not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -110,7 +110,7 @@ serve(async (req) => {
       console.error('No AccuLynx contact ID for user');
       await updateSyncStatus(supabaseUrl, supabaseServiceKey, orderId, 'failed', 'No AccuLynx contact ID');
       return new Response(
-        JSON.stringify({ error: 'No AccuLynx contact ID for user' }),
+        JSON.stringify({ error: true, code: 'ALX-J001', message: 'No AccuLynx contact ID for user' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -121,7 +121,7 @@ serve(async (req) => {
       console.error('No address found for order');
       await updateSyncStatus(supabaseUrl, supabaseServiceKey, orderId, 'failed', 'No address found');
       return new Response(
-        JSON.stringify({ error: 'No address found for order' }),
+        JSON.stringify({ error: true, code: 'ALX-J002', message: 'No address found for order' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -176,14 +176,24 @@ serve(async (req) => {
     console.log('Creating job in AccuLynx:', JSON.stringify(jobPayload));
 
     // Create job in AccuLynx
-    const jobResponse = await fetch(`${ACCULYNX_API_BASE}/jobs`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${acculynxApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(jobPayload),
-    });
+    let jobResponse;
+    try {
+      jobResponse = await fetch(`${ACCULYNX_API_BASE}/jobs`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${acculynxApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jobPayload),
+      });
+    } catch (fetchError) {
+      console.error('Network error calling AccuLynx:', fetchError);
+      await updateSyncStatus(supabaseUrl, supabaseServiceKey, orderId, 'failed', 'Network error');
+      return new Response(
+        JSON.stringify({ error: true, code: 'ALX-J004', message: 'Network error connecting to AccuLynx' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const jobResponseText = await jobResponse.text();
     console.log('AccuLynx job response status:', jobResponse.status);
@@ -193,7 +203,7 @@ serve(async (req) => {
       console.error('Failed to create job:', jobResponseText);
       await updateSyncStatus(supabaseUrl, supabaseServiceKey, orderId, 'failed', jobResponseText);
       return new Response(
-        JSON.stringify({ error: 'Failed to create job in AccuLynx', details: jobResponseText }),
+        JSON.stringify({ error: true, code: 'ALX-J003', message: 'AccuLynx rejected the job', details: jobResponseText }),
         { status: jobResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -228,7 +238,7 @@ serve(async (req) => {
     console.error('Error in sync-order-to-acculynx:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: true, code: 'ALX-J004', message: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
