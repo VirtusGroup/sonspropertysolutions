@@ -208,65 +208,94 @@ export default function BookingPage() {
   };
 
   const handleNext = async () => {
+    console.log('[BookingPage] handleNext called', {
+      currentStep,
+      hasProfile: !!profile,
+      profileContactId: profile?.acculynx_contact_id,
+      userId: user?.id,
+      profileLoading: !profile
+    });
+
     if (currentStep < 6 && canProceed()) {
       // When leaving Contact step (step 3), create AccuLynx contact if not exists
-      if (currentStep === 3 && !profile?.acculynx_contact_id) {
-        setIsCreatingContact(true);
-        try {
-          const address = addresses.find(a => a.id === selectedAddress);
-          const { data, error } = await supabase.functions.invoke('create-acculynx-contact', {
-            body: {
-              userId: user!.id,
-              firstName: contactFirstName,
-              lastName: contactLastName,
-              email: contactEmail,
-              phone: contactPhone,
-              address: address ? {
-                street: address.street,
-                city: address.city,
-                state: address.state,
-                zip: address.zip
-              } : null
-            }
+      if (currentStep === 3) {
+        // Check if profile is loaded
+        if (!profile) {
+          console.log('[BookingPage] Profile not loaded yet, waiting...');
+          toast.error('Please wait while we load your profile...');
+          return;
+        }
+
+        if (!profile.acculynx_contact_id) {
+          console.log('[BookingPage] Starting contact creation...', {
+            userId: user!.id,
+            firstName: contactFirstName,
+            lastName: contactLastName,
+            email: contactEmail,
+            phone: contactPhone
           });
           
-          if (error || data?.error) {
+          setIsCreatingContact(true);
+          try {
+            const address = addresses.find(a => a.id === selectedAddress);
+            console.log('[BookingPage] Invoking create-acculynx-contact edge function...');
+            
+            const { data, error } = await supabase.functions.invoke('create-acculynx-contact', {
+              body: {
+                userId: user!.id,
+                firstName: contactFirstName,
+                lastName: contactLastName,
+                email: contactEmail,
+                phone: contactPhone,
+                address: address ? {
+                  street: address.street,
+                  city: address.city,
+                  state: address.state,
+                  zip: address.zip
+                } : null
+              }
+            });
+            
+            console.log('[BookingPage] create-acculynx-contact response:', { data, error });
+            
+            if (error || data?.error) {
+              const newAttempts = contactCreationAttempts + 1;
+              setContactCreationAttempts(newAttempts);
+              const code = data?.code || 'ALX-C001';
+              console.error('[BookingPage] Failed to create AccuLynx contact:', error || data?.message, 'Code:', code);
+              
+              if (newAttempts >= 3) {
+                setErrorCode(code);
+                setErrorDialogOpen(true);
+              } else {
+                toast.error('Something went wrong');
+              }
+              setIsCreatingContact(false);
+              return;
+            } else {
+              console.log('[BookingPage] AccuLynx contact created successfully:', data?.contactId);
+              await refreshProfile();
+              console.log('[BookingPage] Profile refreshed after contact creation');
+              setContactCreationAttempts(0);
+            }
+          } catch (err) {
             const newAttempts = contactCreationAttempts + 1;
             setContactCreationAttempts(newAttempts);
-            const code = data?.code || 'ALX-C001';
-            console.error('Failed to create AccuLynx contact:', error || data?.message, 'Code:', code);
+            console.error('[BookingPage] Error creating AccuLynx contact:', err);
             
             if (newAttempts >= 3) {
-              // Show AlertDialog on 3rd failure
-              setErrorCode(code);
+              setErrorCode('ALX-C001');
               setErrorDialogOpen(true);
             } else {
-              // Show toast for first 2 failures
               toast.error('Something went wrong');
             }
             setIsCreatingContact(false);
-            return; // Block progression
-          } else {
-            console.log('AccuLynx contact created:', data?.contactId);
-            // Refresh profile to get the new contact ID
-            await refreshProfile();
-            setContactCreationAttempts(0); // Reset on success
+            return;
+          } finally {
+            setIsCreatingContact(false);
           }
-        } catch (err) {
-          const newAttempts = contactCreationAttempts + 1;
-          setContactCreationAttempts(newAttempts);
-          console.error('Error creating AccuLynx contact:', err);
-          
-          if (newAttempts >= 3) {
-            setErrorCode('ALX-C001');
-            setErrorDialogOpen(true);
-          } else {
-            toast.error('Something went wrong');
-          }
-          setIsCreatingContact(false);
-          return; // Block progression
-        } finally {
-          setIsCreatingContact(false);
+        } else {
+          console.log('[BookingPage] Contact already exists, skipping creation:', profile.acculynx_contact_id);
         }
       }
       
@@ -321,21 +350,70 @@ export default function BookingPage() {
   };
 
   const handleSubmit = async () => {
+    console.log('[BookingPage] handleSubmit called', {
+      hasProfile: !!profile,
+      profileContactId: profile?.acculynx_contact_id,
+      userId: user?.id
+    });
+    
     setIsSubmitting(true);
     
-    // Safety check: Ensure AccuLynx contact ID exists
+    // Safety check: Ensure AccuLynx contact ID exists, try to create if missing
     if (!profile?.acculynx_contact_id) {
-      const newAttempts = orderSubmissionAttempts + 1;
-      setOrderSubmissionAttempts(newAttempts);
+      console.log('[BookingPage] No contact ID at submit - attempting fallback creation');
       
-      if (newAttempts >= 3) {
-        setErrorCode('ALX-J001');
-        setErrorDialogOpen(true);
-      } else {
-        toast.error('Something went wrong submitting your request');
+      try {
+        const address = addresses.find(a => a.id === selectedAddress);
+        const { data, error } = await supabase.functions.invoke('create-acculynx-contact', {
+          body: {
+            userId: user!.id,
+            firstName: contactFirstName,
+            lastName: contactLastName,
+            email: contactEmail,
+            phone: contactPhone,
+            address: address ? {
+              street: address.street,
+              city: address.city,
+              state: address.state,
+              zip: address.zip
+            } : null
+          }
+        });
+        
+        console.log('[BookingPage] Fallback contact creation response:', { data, error });
+        
+        if (error || data?.error) {
+          const newAttempts = orderSubmissionAttempts + 1;
+          setOrderSubmissionAttempts(newAttempts);
+          console.error('[BookingPage] Fallback contact creation failed:', error || data?.message);
+          
+          if (newAttempts >= 3) {
+            setErrorCode('ALX-J001');
+            setErrorDialogOpen(true);
+          } else {
+            toast.error('Something went wrong submitting your request');
+          }
+          setIsSubmitting(false);
+          return;
+        }
+        
+        console.log('[BookingPage] Fallback contact created, refreshing profile...');
+        await refreshProfile();
+        console.log('[BookingPage] Profile refreshed, contact ID should now exist');
+      } catch (err) {
+        const newAttempts = orderSubmissionAttempts + 1;
+        setOrderSubmissionAttempts(newAttempts);
+        console.error('[BookingPage] Fallback contact creation error:', err);
+        
+        if (newAttempts >= 3) {
+          setErrorCode('ALX-J001');
+          setErrorDialogOpen(true);
+        } else {
+          toast.error('Something went wrong submitting your request');
+        }
+        setIsSubmitting(false);
+        return;
       }
-      setIsSubmitting(false);
-      return;
     }
     
     try {
