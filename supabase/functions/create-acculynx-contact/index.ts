@@ -54,7 +54,7 @@ serve(async (req) => {
       contactPayload.mailingAddress = {
         street: address.street,
         city: address.city,
-        state: address.state,
+        "mailing.Address.state": address.state,
         zip: address.zip
       };
     }
