@@ -247,6 +247,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          acculynx_contact_id: string | null
           created_at: string | null
           credits: number | null
           email: string | null
@@ -262,6 +263,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          acculynx_contact_id?: string | null
           created_at?: string | null
           credits?: number | null
           email?: string | null
@@ -277,6 +279,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          acculynx_contact_id?: string | null
           created_at?: string | null
           credits?: number | null
           email?: string | null

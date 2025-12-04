@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { StatusBadge } from '@/components/StatusBadge';
 import { 
   ArrowLeft, 
@@ -17,7 +18,8 @@ import {
   Home,
   User,
   Camera,
-  X
+  X,
+  AlertTriangle
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useOrder } from '@/hooks/useOrders';
@@ -130,6 +132,21 @@ export default function OrderDetailPage() {
 
       <div className="flex-1 px-4 py-6">
         <div className="max-w-4xl mx-auto space-y-6">
+          {/* Sync Failure Alert */}
+          {order.sync_status === 'requires_manual_review' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  There was an issue syncing this order with our system. Our team has been notified and will resolve it shortly.
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+          
           {/* Horizontal Timeline */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
