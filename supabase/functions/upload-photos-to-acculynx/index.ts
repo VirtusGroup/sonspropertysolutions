@@ -116,19 +116,33 @@ serve(async (req) => {
         );
 
         if (photoResponse.ok) {
-          const photoData = await photoResponse.json();
+          // Safely handle response - AccuLynx may return empty body on success
+          let acculynxFileId: string | null = null;
+          const responseText = await photoResponse.text();
           
-          // Mark as uploaded
+          if (responseText && responseText.trim()) {
+            try {
+              const photoData = JSON.parse(responseText);
+              acculynxFileId = photoData.id || null;
+              console.log(`AccuLynx response for photo ${photo.id}:`, responseText);
+            } catch (parseError) {
+              console.log(`Photo ${photo.id} uploaded successfully but response not JSON:`, responseText);
+            }
+          } else {
+            console.log(`Photo ${photo.id} uploaded successfully (empty response body)`);
+          }
+          
+          // Mark as uploaded since HTTP call succeeded
           await supabase
             .from('order_photos')
             .update({
               uploaded_to_acculynx: true,
-              acculynx_file_id: photoData.id
+              acculynx_file_id: acculynxFileId
             })
             .eq('id', photo.id);
 
           photosUploaded++;
-          console.log(`Photo ${photo.id} uploaded successfully, AccuLynx file ID: ${photoData.id}`);
+          console.log(`Photo ${photo.id} upload marked complete, AccuLynx file ID: ${acculynxFileId || 'not returned'}`);
         } else {
           const errorText = await photoResponse.text();
           console.error(`Failed to upload photo ${photo.id}:`, errorText);
