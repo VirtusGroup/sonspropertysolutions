@@ -85,9 +85,9 @@ export default function HomePage() {
               index={1}
             />
             <DashboardTile
-              icon={Wrench}
-              label="View Services"
-              href="/services"
+              icon={User}
+              label="My Account"
+              href="/account"
               variant="primary"
               index={2}
             />
@@ -104,7 +104,7 @@ export default function HomePage() {
             <DashboardTile
               icon={Calculator}
               label="Price Estimator"
-              href="/services"
+              href="/estimator"
               index={4}
             />
             <DashboardTile
@@ -127,14 +127,14 @@ export default function HomePage() {
             />
 
             {/* Account Features */}
-            <DashboardTile icon={User} label="My Account" href="/account" index={8} />
+            <DashboardTile icon={Wrench} label="View Services" href="/services" index={8} />
             <DashboardTile
               icon={MapPinned}
               label="Addresses"
-              href="/account"
+              href="/account#addresses"
               index={9}
             />
-            <DashboardTile icon={Gift} label="Referrals" href="/account" index={10} />
+            <DashboardTile icon={Gift} label="Referrals" href="/account#referrals" index={10} />
             <DashboardTile
               icon={HelpCircle}
               label="Help Center"
