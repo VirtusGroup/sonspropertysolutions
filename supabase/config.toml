@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.sync-order-to-acculynx]
 verify_jwt = false
+
+[functions.upload-photos-to-acculynx]
+verify_jwt = false
