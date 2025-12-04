@@ -1,17 +1,16 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
-import { estimatePrice } from '@/lib/estimator';
 import { ChevronRight, Home, Building2 } from 'lucide-react';
 
 const categoryLabels: Record<string, string> = {
   roofing: 'Roof Inspections',
   gutters: 'Gutters & Drainage',
   maintenance: 'Repair & Maintenance',
-  emergency: 'Emergency Services',
+  storm: 'Emergency Services',
 };
 
-const categoryOrder = ['roofing', 'gutters', 'maintenance', 'emergency'];
+const categoryOrder = ['roofing', 'gutters', 'maintenance', 'storm'];
 
 export default function EstimatorPage() {
   const { services } = useStore();
@@ -31,9 +30,9 @@ export default function EstimatorPage() {
         transition={{ duration: 0.3 }}
         className="px-4 py-4"
       >
-        <h1 className="text-2xl font-bold text-foreground">Price Estimator</h1>
+        <h1 className="text-2xl font-bold text-foreground">Our Services</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Get instant price estimates for our services
+          Browse our services and schedule an appointment
         </p>
       </motion.div>
 
@@ -58,14 +57,6 @@ export default function EstimatorPage() {
               {/* Service Cards */}
               <div className="space-y-3">
                 {categoryServices.map((service, serviceIndex) => {
-                  const [low, high] = estimatePrice({
-                    service,
-                    quantity: 1,
-                    roofType: 'asphalt',
-                    stories: 1,
-                    addonIds: [],
-                  });
-
                   return (
                     <motion.div
                       key={service.id}
@@ -113,11 +104,8 @@ export default function EstimatorPage() {
                           </div>
                         </div>
 
-                        {/* Price */}
+                        {/* Arrow */}
                         <div className="flex items-center gap-1 flex-shrink-0">
-                          <p className="text-base font-bold text-accent">
-                            ${low} - ${high}
-                          </p>
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         </div>
                       </Link>
@@ -128,16 +116,6 @@ export default function EstimatorPage() {
             </motion.div>
           );
         })}
-
-        {/* Disclaimer */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.5 }}
-          className="text-xs text-muted-foreground text-center pt-4 pb-2"
-        >
-          * Final pricing may change after on-site inspection
-        </motion.p>
       </div>
     </div>
   );

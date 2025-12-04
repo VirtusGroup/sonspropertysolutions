@@ -94,7 +94,7 @@ export const demoServices: Service[] = [
     inclusions: ['Old sealant removal', 'Professional-grade sealant', 'Frame inspection', '2-year warranty'],
     exclusions: ['Skylight replacement', 'Frame repair', 'Interior painting'],
     addons: [],
-    applicableTo: 'residential',
+    applicableTo: 'both',
   },
   {
     id: 'svc-6',
@@ -141,7 +141,7 @@ export const demoServices: Service[] = [
     inclusions: ['Old flashing removal', 'New metal flashing', 'Professional sealing', '2-year warranty'],
     exclusions: ['Chimney repair', 'Masonry work', 'Cap replacement'],
     addons: [],
-    applicableTo: 'residential',
+    applicableTo: 'both',
   },
   {
     id: 'svc-9',
