@@ -134,27 +134,15 @@ export default function ServiceDetailPage() {
             <h1 className="text-3xl font-bold">{service.title}</h1>
           </motion.div>
 
-          {/* Description */}
+          {/* Description + Schedule Your Appointment */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
           >
             <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground">{service.description}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Schedule Your Appointment */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card className="border-primary/20">
               <CardContent className="pt-6 space-y-4">
+                <p className="text-muted-foreground">{service.description}</p>
                 <motion.div whileTap={{ scale: 0.98 }}>
                   <Button onClick={handleSchedule} size="lg" className="w-full">
                     <CalendarCheck className="h-5 w-5 mr-2" />

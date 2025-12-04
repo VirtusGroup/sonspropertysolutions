@@ -153,6 +153,27 @@ export default function BookingPage() {
     }
   }, [addresses, propertyType]);
 
+  // Pre-fill notes with property type prefix
+  const getNotesPrefix = (type: PropertyType) => `This is a ${type} property.\n\n`;
+  
+  useEffect(() => {
+    const prefix = getNotesPrefix(propertyType);
+    setNotes(prefix);
+  }, [propertyType]);
+
+  // Handle notes change - prevent deletion of property type prefix
+  const handleNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const prefix = getNotesPrefix(propertyType);
+    const newValue = e.target.value;
+    
+    if (newValue.startsWith(prefix)) {
+      setNotes(newValue);
+    } else {
+      // User tried to delete the prefix, restore it
+      setNotes(prefix);
+    }
+  };
+
   if (!bookingState || !service || !user) {
     return null;
   }
@@ -162,7 +183,7 @@ export default function BookingPage() {
       case 1: return !!propertyType;
       case 2: return !!selectedAddress;
       case 3: return contactFirstName && contactLastName && contactEmail && contactPhone;
-      case 4: return notes.trim().length > 0; // Notes are required
+      case 4: return notes.trim().length > getNotesPrefix(propertyType).trim().length; // User must add content after prefix
       case 5: return preferredDate && timeWindow;
       case 6: return true;
       default: return false;
@@ -643,12 +664,12 @@ export default function BookingPage() {
                     <Textarea 
                       placeholder="Describe what's going on and where the issue is..." 
                       value={notes} 
-                      onChange={(e) => setNotes(e.target.value)} 
+                      onChange={handleNotesChange} 
                       rows={4}
-                      className={!notes.trim() ? 'border-destructive/50' : ''}
+                      className={notes.trim().length <= getNotesPrefix(propertyType).trim().length ? 'border-destructive/50' : ''}
                     />
-                    {!notes.trim() && (
-                      <p className="text-xs text-destructive mt-2">Notes are required to proceed</p>
+                    {notes.trim().length <= getNotesPrefix(propertyType).trim().length && (
+                      <p className="text-xs text-destructive mt-2">Please add details about your request</p>
                     )}
                   </CardContent>
                 </Card>
