@@ -128,6 +128,30 @@ serve(async (req) => {
 
     // Build job payload
     const tradeTypeId = getTradeTypeFromCategory(order.service_category || 'roofing');
+    
+    // Build formatted notes for AccuLynx
+    const propertyTypeCapitalized = order.property_type === 'residential' ? 'Residential' : 'Commercial';
+    
+    // Extract user's free-form notes by removing the property type prefix
+    const propertyPrefix = `This is a ${order.property_type} property. `;
+    const userNotes = order.notes?.startsWith(propertyPrefix) 
+      ? order.notes.slice(propertyPrefix.length).trim() 
+      : (order.notes || '');
+    
+    // Format the preferred date if available
+    let schedulePart = '';
+    if (order.scheduled_at) {
+      const date = new Date(order.scheduled_at);
+      const formattedDate = `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${date.getFullYear()}`;
+      schedulePart = formattedDate;
+    }
+    if (order.preferred_window) {
+      schedulePart += schedulePart ? ` ${order.preferred_window}` : order.preferred_window;
+    }
+    
+    // Build final notes: "This is a [Property Type] Property - [job_ref] - [date] [time window] - [user notes]"
+    const formattedNotes = `This is a ${propertyTypeCapitalized} Property - ${order.job_ref} - ${schedulePart || 'No preferred time'} - ${userNotes || 'No additional notes'}`;
+    
     const jobPayload = {
       contact: {
         id: profile.acculynx_contact_id
@@ -146,7 +170,7 @@ serve(async (req) => {
       tradeTypes: [
         { id: tradeTypeId }
       ],
-      notes: `Service request ${order.job_ref}: ${order.notes || 'No additional notes'}`
+      notes: formattedNotes
     };
 
     console.log('Creating job in AccuLynx:', JSON.stringify(jobPayload));

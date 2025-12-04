@@ -307,6 +307,7 @@ export default function BookingPage() {
         contact_email: contactEmail,
         contact_phone: contactPhone,
         preferred_window: `${TIME_WINDOWS.find(w => w.id === timeWindow)?.label} (${TIME_WINDOWS.find(w => w.id === timeWindow)?.time})`,
+        scheduled_at: preferredDate || undefined,
         notes: notes || undefined,
       };
 
