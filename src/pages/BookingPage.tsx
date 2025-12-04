@@ -154,7 +154,7 @@ export default function BookingPage() {
   }, [addresses, propertyType]);
 
   // Pre-fill notes with property type prefix
-  const getNotesPrefix = (type: PropertyType) => `This is a ${type} property.\n\n`;
+  const getNotesPrefix = (type: PropertyType) => `This is a ${type} property. `;
   
   useEffect(() => {
     const prefix = getNotesPrefix(propertyType);
@@ -269,7 +269,6 @@ export default function BookingPage() {
         contact_phone: contactPhone,
         preferred_window: `${TIME_WINDOWS.find(w => w.id === timeWindow)?.label} (${TIME_WINDOWS.find(w => w.id === timeWindow)?.time})`,
         notes: notes || undefined,
-        scheduled_at: preferredDate || undefined,
       };
 
       const order = await createOrder.mutateAsync(orderInput);
@@ -355,7 +354,7 @@ export default function BookingPage() {
             <div className="flex items-start gap-3 text-left">
               <MessageCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
               <p className="text-sm text-muted-foreground">
-                A Sons Roofing representative will contact you within <span className="font-medium text-foreground">2 hours</span> for emergency requests or <span className="font-medium text-foreground">next business day</span> for standard services.
+                Thank you for scheduling your appointment! A Sons Roofing representative will be in touch with you as soon as possible.
               </p>
             </div>
           </motion.div>
@@ -638,22 +637,19 @@ export default function BookingPage() {
                   <CardContent>
                     <p className="text-sm text-muted-foreground mb-3">Upload 1 photo to help us understand the issue</p>
                     <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-                    <div className="grid grid-cols-3 gap-3">
-                      {photos.map(photo => (
-                        <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden border">
-                          <img src={photo.preview} alt="Upload" className="w-full h-full object-cover" />
-                          <button onClick={() => handleRemovePhoto(photo.id)} className="absolute top-1 right-1 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center">
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                      {photos.length < 1 && (
-                        <button onClick={() => fileInputRef.current?.click()} className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors">
-                          <Upload className="w-6 h-6" />
-                          <span className="text-xs">Add Photo</span>
+                    {photos.length > 0 ? (
+                      <div className="relative aspect-video rounded-lg overflow-hidden border">
+                        <img src={photos[0].preview} alt="Upload" className="w-full h-full object-cover" />
+                        <button onClick={() => handleRemovePhoto(photos[0].id)} className="absolute top-2 right-2 w-8 h-8 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center">
+                          <X className="w-5 h-5" />
                         </button>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <button onClick={() => fileInputRef.current?.click()} className="w-full py-8 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 text-muted-foreground active:border-primary active:text-primary transition-colors">
+                        <Upload className="w-8 h-8" />
+                        <span className="text-sm font-medium">Add Photo</span>
+                      </button>
+                    )}
                   </CardContent>
                 </Card>
                 <Card>
