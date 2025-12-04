@@ -141,25 +141,13 @@ export default function OrderDetailPage() {
                 <CardTitle>Order Timeline</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between relative pt-6 pb-2 overflow-x-auto">
+                <div className="flex items-center justify-between relative pb-8 overflow-x-auto">
                   {statusSteps.map((step, index) => {
                     const isCompleted = index <= currentStepIndex;
                     const isCurrent = index === currentStepIndex;
-                    const isAbove = index % 2 === 0;
 
                     return (
                       <div key={step} className="flex flex-col items-center relative flex-1 min-w-[60px]">
-                        {/* Label - alternating above/below */}
-                        <span
-                          className={`text-xs text-center whitespace-nowrap absolute ${
-                            isAbove ? '-top-6' : 'top-12'
-                          } ${
-                            isCompleted ? 'text-foreground font-medium' : 'text-muted-foreground'
-                          }`}
-                        >
-                          {statusLabels[step]}
-                        </span>
-
                         {/* Circle and line container */}
                         <div className="flex items-center w-full">
                           {/* Line before (except first) */}
@@ -191,6 +179,15 @@ export default function OrderDetailPage() {
                             />
                           )}
                         </div>
+
+                        {/* Label - always below */}
+                        <span
+                          className={`text-xs text-center whitespace-nowrap absolute top-10 ${
+                            isCompleted ? 'text-foreground font-medium' : 'text-muted-foreground'
+                          }`}
+                        >
+                          {statusLabels[step]}
+                        </span>
                       </div>
                     );
                   })}

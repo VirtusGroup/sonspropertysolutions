@@ -146,7 +146,7 @@ export default function ServiceDetailPage() {
                 <motion.div whileTap={{ scale: 0.98 }}>
                   <Button onClick={handleSchedule} size="lg" className="w-full">
                     <CalendarCheck className="h-5 w-5 mr-2" />
-                    Schedule Your Appointment
+                    Start Your Service Request
                   </Button>
                 </motion.div>
                 <p className="text-sm text-muted-foreground text-center">
