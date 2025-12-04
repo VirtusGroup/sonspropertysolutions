@@ -71,9 +71,19 @@ function ScrollToTop() {
   const { pathname, hash } = useLocation();
   
   useEffect(() => {
+    // Disable browser's automatic scroll restoration
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+  }, []);
+  
+  useEffect(() => {
     // Don't scroll to top if there's a hash anchor
     if (!hash) {
-      window.scrollTo(0, 0);
+      // Use requestAnimationFrame to ensure scroll happens after render
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      });
     }
   }, [pathname, hash]);
   
