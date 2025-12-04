@@ -219,71 +219,74 @@ export default function OrderDetailPage() {
                 <CardTitle>Order Timeline</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between relative py-6 px-2">
-                  {statusSteps.map((step, index) => {
-                    const isCompleted = index <= currentStepIndex;
-                    const isCurrent = index === currentStepIndex;
-                    // Alternating: index 0, 2, 4 = top; index 1, 3 = bottom
-                    const labelOnTop = index % 2 === 0;
+                <div className="relative h-28 px-4">
+                  {/* SVG curves layer */}
+                  <svg 
+                    className="absolute inset-0 w-full h-full pointer-events-none" 
+                    preserveAspectRatio="none"
+                    style={{ overflow: 'visible' }}
+                  >
+                    {statusSteps.map((_, index) => {
+                      if (index === 0) return null;
+                      const isCompletedLine = index <= currentStepIndex;
+                      
+                      // Calculate positions (circles are at 10%, 30%, 50%, 70%, 90% horizontally)
+                      const prevX = ((index - 1) * 20 + 10);
+                      const currX = (index * 20 + 10);
+                      const midX = (prevX + currX) / 2;
+                      
+                      // Center Y is at 50% of container height
+                      const centerY = 50;
+                      // Curve amplitude - alternates direction
+                      const curveDown = index % 2 === 1;
+                      const controlY = curveDown ? centerY + 20 : centerY - 20;
+                      
+                      return (
+                        <path
+                          key={`curve-${index}`}
+                          d={`M ${prevX}% ${centerY}% Q ${midX}% ${controlY}% ${currX}% ${centerY}%`}
+                          className={isCompletedLine ? 'stroke-primary' : 'stroke-muted'}
+                          fill="none"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                      );
+                    })}
+                  </svg>
+                  
+                  {/* Circles and labels layer */}
+                  <div className="relative flex justify-between items-center h-full">
+                    {statusSteps.map((step, index) => {
+                      const isCompleted = index <= currentStepIndex;
+                      const isCurrent = index === currentStepIndex;
+                      // Alternating: index 0, 2, 4 = top; index 1, 3 = bottom
+                      const labelOnTop = index % 2 === 0;
 
-                    return (
-                      <div key={step} className="flex flex-col items-center relative flex-1">
-                        {/* Label on top for even indices */}
-                        {labelOnTop && (
+                      return (
+                        <div key={step} className="relative flex items-center justify-center" style={{ width: '32px' }}>
+                          {/* Label - absolutely positioned and centered */}
                           <span
-                            className={`text-xs text-center whitespace-nowrap mb-2 ${
-                              isCompleted ? 'text-foreground font-medium' : 'text-muted-foreground'
-                            }`}
+                            className={`absolute left-1/2 -translate-x-1/2 text-xs text-center whitespace-nowrap ${
+                              labelOnTop ? 'bottom-full mb-2' : 'top-full mt-2'
+                            } ${isCompleted ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
                           >
                             {statusLabels[step]}
                           </span>
-                        )}
-
-                        {/* Circle and line container */}
-                        <div className="flex items-center w-full">
-                          {/* Line before (except first) */}
-                          {index > 0 && (
-                            <div
-                              className={`h-0.5 flex-1 ${
-                                index <= currentStepIndex ? 'bg-primary' : 'bg-muted'
-                              }`}
-                            />
-                          )}
 
                           {/* Circle */}
                           <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${
+                            className={`w-8 h-8 rounded-full flex items-center justify-center border-2 bg-background ${
                               isCompleted
                                 ? 'bg-primary border-primary text-primary-foreground'
-                                : 'border-muted bg-background text-muted-foreground'
+                                : 'border-muted text-muted-foreground'
                             } ${isCurrent ? 'ring-2 ring-primary/30' : ''}`}
                           >
                             <span className="text-xs font-medium">{index + 1}</span>
                           </div>
-
-                          {/* Line after (except last) */}
-                          {index < statusSteps.length - 1 && (
-                            <div
-                              className={`h-0.5 flex-1 ${
-                                index < currentStepIndex ? 'bg-primary' : 'bg-muted'
-                              }`}
-                            />
-                          )}
                         </div>
-
-                        {/* Label on bottom for odd indices */}
-                        {!labelOnTop && (
-                          <span
-                            className={`text-xs text-center whitespace-nowrap mt-2 ${
-                              isCompleted ? 'text-foreground font-medium' : 'text-muted-foreground'
-                            }`}
-                          >
-                            {statusLabels[step]}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </CardContent>
             </Card>
