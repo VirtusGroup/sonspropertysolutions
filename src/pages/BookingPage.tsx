@@ -16,6 +16,15 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   ArrowLeft,
   ArrowRight,
   Check,
@@ -82,6 +91,12 @@ export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingContact, setIsCreatingContact] = useState(false);
+  
+  // Error handling state
+  const [contactCreationAttempts, setContactCreationAttempts] = useState(0);
+  const [orderSubmissionAttempts, setOrderSubmissionAttempts] = useState(0);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorCode, setErrorCode] = useState('');
   
   // Property Type (Step 1)
   const [propertyType, setPropertyType] = useState<PropertyType>('residential');
@@ -215,17 +230,41 @@ export default function BookingPage() {
             }
           });
           
-          if (error) {
-            console.error('Failed to create AccuLynx contact:', error);
-            // Continue anyway - don't block the user
+          if (error || data?.error) {
+            const newAttempts = contactCreationAttempts + 1;
+            setContactCreationAttempts(newAttempts);
+            const code = data?.code || 'ALX-C001';
+            console.error('Failed to create AccuLynx contact:', error || data?.message, 'Code:', code);
+            
+            if (newAttempts >= 3) {
+              // Show AlertDialog on 3rd failure
+              setErrorCode(code);
+              setErrorDialogOpen(true);
+            } else {
+              // Show toast for first 2 failures
+              toast.error('Something went wrong');
+            }
+            setIsCreatingContact(false);
+            return; // Block progression
           } else {
             console.log('AccuLynx contact created:', data?.contactId);
             // Refresh profile to get the new contact ID
             await refreshProfile();
+            setContactCreationAttempts(0); // Reset on success
           }
         } catch (err) {
+          const newAttempts = contactCreationAttempts + 1;
+          setContactCreationAttempts(newAttempts);
           console.error('Error creating AccuLynx contact:', err);
-          // Continue anyway - don't block the user
+          
+          if (newAttempts >= 3) {
+            setErrorCode('ALX-C001');
+            setErrorDialogOpen(true);
+          } else {
+            toast.error('Something went wrong');
+          }
+          setIsCreatingContact(false);
+          return; // Block progression
         } finally {
           setIsCreatingContact(false);
         }
@@ -284,6 +323,21 @@ export default function BookingPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
+    // Safety check: Ensure AccuLynx contact ID exists
+    if (!profile?.acculynx_contact_id) {
+      const newAttempts = orderSubmissionAttempts + 1;
+      setOrderSubmissionAttempts(newAttempts);
+      
+      if (newAttempts >= 3) {
+        setErrorCode('ALX-J001');
+        setErrorDialogOpen(true);
+      } else {
+        toast.error('Something went wrong submitting your request');
+      }
+      setIsSubmitting(false);
+      return;
+    }
+    
     try {
       // Get address snapshot
       const address = addresses.find(a => a.id === selectedAddress);
@@ -321,37 +375,58 @@ export default function BookingPage() {
         }
       }
 
-      // Sync to AccuLynx: 1) Create job, 2) Upload photos (chained, non-blocking)
-      supabase.functions.invoke('sync-order-to-acculynx', {
+      // Sync to AccuLynx: Create job and await result
+      const { data: syncData, error: syncError } = await supabase.functions.invoke('sync-order-to-acculynx', {
         body: { orderId: order.id }
-      }).then(async ({ data, error }) => {
-        if (error) {
-          console.error('AccuLynx job sync error:', error);
-          return;
-        }
-        console.log('AccuLynx job created:', data);
+      });
+
+      if (syncError || syncData?.error) {
+        const newAttempts = orderSubmissionAttempts + 1;
+        setOrderSubmissionAttempts(newAttempts);
+        const code = syncData?.code || 'ALX-J004';
+        console.error('AccuLynx job sync error:', syncError || syncData?.message, 'Code:', code);
         
-        // If job was created and we have photos, upload them
-        if (data?.acculynxJobId && photos.length > 0) {
-          const { data: photoData, error: photoError } = await supabase.functions.invoke('upload-photos-to-acculynx', {
-            body: { orderId: order.id, acculynxJobId: data.acculynxJobId }
-          });
-          
+        if (newAttempts >= 3) {
+          setErrorCode(code);
+          setErrorDialogOpen(true);
+        } else {
+          toast.error('Something went wrong submitting your request');
+        }
+        setIsSubmitting(false);
+        return; // Block confirmation
+      }
+      
+      console.log('AccuLynx job created:', syncData);
+      
+      // If job was created and we have photos, upload them (non-blocking)
+      if (syncData?.acculynxJobId && photos.length > 0) {
+        supabase.functions.invoke('upload-photos-to-acculynx', {
+          body: { orderId: order.id, acculynxJobId: syncData.acculynxJobId }
+        }).then(({ data: photoData, error: photoError }) => {
           if (photoError) {
             console.error('AccuLynx photo upload error:', photoError);
           } else {
             console.log('AccuLynx photos uploaded:', photoData);
           }
-        }
-      }).catch(err => {
-        console.error('AccuLynx sync failed:', err);
-      });
+        }).catch(err => {
+          console.error('AccuLynx photo sync failed:', err);
+        });
+      }
 
       setConfirmedJobRef(order.job_ref);
       setConfirmedOrderId(order.id);
+      setOrderSubmissionAttempts(0); // Reset on success
       setIsConfirmed(true);
     } catch (error) {
-      toast.error('Failed to submit order. Please try again.');
+      const newAttempts = orderSubmissionAttempts + 1;
+      setOrderSubmissionAttempts(newAttempts);
+      
+      if (newAttempts >= 3) {
+        setErrorCode('ALX-J004');
+        setErrorDialogOpen(true);
+      } else {
+        toast.error('Something went wrong submitting your request');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -834,6 +909,25 @@ export default function BookingPage() {
           )}
         </div>
       </div>
+
+      {/* Error Dialog */}
+      <AlertDialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Something went wrong</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>We encountered an issue processing your request.</p>
+              <p>Please contact support with this error code:</p>
+              <div className="mt-2 p-3 bg-muted rounded-lg text-center">
+                <span className="font-mono text-lg font-bold text-foreground">{errorCode}</span>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
