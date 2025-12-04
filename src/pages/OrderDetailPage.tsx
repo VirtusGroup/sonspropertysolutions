@@ -219,13 +219,26 @@ export default function OrderDetailPage() {
                 <CardTitle>Order Timeline</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between relative pb-8 overflow-x-auto">
+                <div className="flex items-center justify-between relative py-6 px-2">
                   {statusSteps.map((step, index) => {
                     const isCompleted = index <= currentStepIndex;
                     const isCurrent = index === currentStepIndex;
+                    // Alternating: index 0, 2, 4 = top; index 1, 3 = bottom
+                    const labelOnTop = index % 2 === 0;
 
                     return (
-                      <div key={step} className="flex flex-col items-center relative flex-1 min-w-[60px]">
+                      <div key={step} className="flex flex-col items-center relative flex-1">
+                        {/* Label on top for even indices */}
+                        {labelOnTop && (
+                          <span
+                            className={`text-xs text-center whitespace-nowrap mb-2 ${
+                              isCompleted ? 'text-foreground font-medium' : 'text-muted-foreground'
+                            }`}
+                          >
+                            {statusLabels[step]}
+                          </span>
+                        )}
+
                         {/* Circle and line container */}
                         <div className="flex items-center w-full">
                           {/* Line before (except first) */}
@@ -239,7 +252,7 @@ export default function OrderDetailPage() {
 
                           {/* Circle */}
                           <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border-2 z-10 ${
+                            className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${
                               isCompleted
                                 ? 'bg-primary border-primary text-primary-foreground'
                                 : 'border-muted bg-background text-muted-foreground'
@@ -258,14 +271,16 @@ export default function OrderDetailPage() {
                           )}
                         </div>
 
-                        {/* Label - always below */}
-                        <span
-                          className={`text-xs text-center whitespace-nowrap absolute top-10 ${
-                            isCompleted ? 'text-foreground font-medium' : 'text-muted-foreground'
-                          }`}
-                        >
-                          {statusLabels[step]}
-                        </span>
+                        {/* Label on bottom for odd indices */}
+                        {!labelOnTop && (
+                          <span
+                            className={`text-xs text-center whitespace-nowrap mt-2 ${
+                              isCompleted ? 'text-foreground font-medium' : 'text-muted-foreground'
+                            }`}
+                          >
+                            {statusLabels[step]}
+                          </span>
+                        )}
                       </div>
                     );
                   })}
