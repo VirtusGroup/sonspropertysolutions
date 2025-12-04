@@ -2,8 +2,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
 import { estimatePrice } from '@/lib/estimator';
-import { Badge } from '@/components/ui/badge';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Home, Building2 } from 'lucide-react';
 
 const categoryLabels: Record<string, string> = {
   roofing: 'Roof Inspections',
@@ -84,29 +83,42 @@ export default function EstimatorPage() {
                       >
                         {/* Thumbnail */}
                         <div
-                          className="w-16 h-16 rounded-lg bg-cover bg-center flex-shrink-0"
+                          className="w-14 h-14 rounded-lg bg-cover bg-center flex-shrink-0"
                           style={{ backgroundImage: `url(${service.heroImage})` }}
                         />
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground truncate">
+                          <p className="font-medium text-foreground text-sm leading-tight">
                             {service.title}
                           </p>
-                          <Badge
-                            variant="outline"
-                            className="mt-1 text-xs bg-accent/10 text-accent border-accent/30"
-                          >
-                            {categoryLabels[service.category]}
-                          </Badge>
+                          <div className="flex items-center gap-1 mt-1 text-muted-foreground">
+                            {service.applicableTo === 'both' ? (
+                              <>
+                                <Home className="h-3 w-3" />
+                                <span className="text-xs">/</span>
+                                <Building2 className="h-3 w-3" />
+                              </>
+                            ) : service.applicableTo === 'residential' ? (
+                              <>
+                                <Home className="h-3 w-3" />
+                                <span className="text-xs">Only</span>
+                              </>
+                            ) : (
+                              <>
+                                <Building2 className="h-3 w-3" />
+                                <span className="text-xs">Only</span>
+                              </>
+                            )}
+                          </div>
                         </div>
 
                         {/* Price */}
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-lg font-bold text-accent">
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <p className="text-base font-bold text-accent">
                             ${low} - ${high}
                           </p>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto" />
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         </div>
                       </Link>
                     </motion.div>

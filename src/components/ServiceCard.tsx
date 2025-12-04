@@ -1,7 +1,7 @@
 import { Service, ServiceCategory } from '@/types';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Home, Building2 } from 'lucide-react';
+import { Home, Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -17,20 +17,7 @@ const categoryLabels: Record<ServiceCategory, string> = {
   storm: 'Emergency Services',
 };
 
-const applicabilityLabels = {
-  residential: { label: 'Residential', icon: Home },
-  commercial: { label: 'Commercial', icon: Building2 },
-  both: { label: 'Res & Com', icon: null },
-};
-
 export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
-  const priceDisplay =
-    service.unit === 'fixed'
-      ? `$${service.basePrice}`
-      : `$${service.basePrice}/${service.unit.replace('_', ' ')}`;
-
-  const applicability = applicabilityLabels[service.applicableTo];
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -54,9 +41,24 @@ export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
               <Badge className="bg-accent text-primary backdrop-blur text-xs">
                 {categoryLabels[service.category]}
               </Badge>
-              <Badge variant="outline" className="bg-card/90 backdrop-blur text-xs">
-                {applicability.icon && <applicability.icon className="h-3 w-3 mr-1" />}
-                {applicability.label}
+              <Badge variant="outline" className="bg-card/90 backdrop-blur text-xs flex items-center gap-1">
+                {service.applicableTo === 'both' ? (
+                  <>
+                    <Home className="h-3 w-3" />
+                    <span>/</span>
+                    <Building2 className="h-3 w-3" />
+                  </>
+                ) : service.applicableTo === 'residential' ? (
+                  <>
+                    <Home className="h-3 w-3" />
+                    <span>Only</span>
+                  </>
+                ) : (
+                  <>
+                    <Building2 className="h-3 w-3" />
+                    <span>Only</span>
+                  </>
+                )}
               </Badge>
             </motion.div>
           </div>
@@ -68,13 +70,6 @@ export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
               {service.description}
             </p>
           </CardContent>
-          <CardFooter className="p-4 pt-0 flex items-center justify-between">
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Clock className="h-4 w-4 mr-1" />
-              <span>{service.durationMin} min</span>
-            </div>
-            <div className="font-semibold text-primary">{priceDisplay}</div>
-          </CardFooter>
         </Card>
       </Link>
     </motion.div>

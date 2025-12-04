@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Clock, CheckCircle2, XCircle, Home, Building2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, Home, Building2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { estimatePrice } from '@/lib/estimator';
 import { ServiceCategory } from '@/types';
@@ -23,12 +23,6 @@ const categoryLabels: Record<ServiceCategory, string> = {
   gutters: 'Gutters & Drainage',
   maintenance: 'Repair & Maintenance',
   storm: 'Emergency Services',
-};
-
-const applicabilityConfig = {
-  residential: { label: 'Residential Only', icon: Home, variant: 'secondary' as const },
-  commercial: { label: 'Commercial Only', icon: Building2, variant: 'secondary' as const },
-  both: { label: 'Residential & Commercial', icon: null, variant: 'outline' as const },
 };
 
 export default function ServiceDetailPage() {
@@ -81,8 +75,31 @@ export default function ServiceDetailPage() {
     });
   };
 
-  const priceUnit = service.unit === 'fixed' ? '' : ` / ${service.unit.replace('_', ' ')}`;
-  const applicability = applicabilityConfig[service.applicableTo];
+  const renderApplicabilityBadge = () => {
+    if (service.applicableTo === 'both') {
+      return (
+        <Badge variant="outline" className="bg-card/90 backdrop-blur flex items-center gap-1">
+          <Home className="h-3 w-3" />
+          <span>/</span>
+          <Building2 className="h-3 w-3" />
+        </Badge>
+      );
+    } else if (service.applicableTo === 'residential') {
+      return (
+        <Badge variant="secondary" className="bg-card/90 backdrop-blur flex items-center gap-1">
+          <Home className="h-3 w-3" />
+          <span>Only</span>
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge variant="secondary" className="bg-card/90 backdrop-blur flex items-center gap-1">
+          <Building2 className="h-3 w-3" />
+          <span>Only</span>
+        </Badge>
+      );
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -102,8 +119,8 @@ export default function ServiceDetailPage() {
           className="w-full h-full object-cover"
         />
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
           <Button
@@ -124,10 +141,7 @@ export default function ServiceDetailPage() {
           <Badge className="bg-accent text-primary backdrop-blur">
             {categoryLabels[service.category]}
           </Badge>
-          <Badge variant={applicability.variant} className="bg-card/90 backdrop-blur">
-            {applicability.icon && <applicability.icon className="h-3 w-3 mr-1" />}
-            {applicability.label}
-          </Badge>
+          {renderApplicabilityBadge()}
         </motion.div>
       </motion.div>
 
@@ -139,23 +153,27 @@ export default function ServiceDetailPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <h1 className="text-3xl font-bold mb-2">{service.title}</h1>
-            <div className="flex items-center gap-4 text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>{service.durationMin} min</span>
-              </div>
-              <div className="font-semibold text-primary">
-                ${service.basePrice}{priceUnit}
-              </div>
-            </div>
+            <h1 className="text-3xl font-bold">{service.title}</h1>
           </motion.div>
 
-          {/* Get a Quote - Moved to top */}
+          {/* Description */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
+          >
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground">{service.description}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Get a Quote */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
           >
             <Card className="border-primary/20">
               <CardHeader>
@@ -221,19 +239,6 @@ export default function ServiceDetailPage() {
                     Get Your Quote
                   </Button>
                 </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Description */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground">{service.description}</p>
               </CardContent>
             </Card>
           </motion.div>
