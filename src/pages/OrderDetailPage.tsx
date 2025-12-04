@@ -19,7 +19,9 @@ import {
   User,
   Camera,
   X,
-  AlertTriangle
+  AlertTriangle,
+  Clock,
+  XCircle
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useOrder } from '@/hooks/useOrders';
@@ -132,16 +134,75 @@ export default function OrderDetailPage() {
 
       <div className="flex-1 px-4 py-6">
         <div className="max-w-4xl mx-auto space-y-6">
-          {/* Sync Failure Alert */}
+          {/* Sync Status Alerts */}
+          {order.sync_status === 'pending_photo_upload' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Alert>
+                <Clock className="h-4 w-4" />
+                <AlertDescription>
+                  Photos are being uploaded...
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+          
+          {order.sync_status === 'failed' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Alert className="border-amber-500/50 bg-amber-500/10">
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                <AlertDescription className="text-amber-700 dark:text-amber-400">
+                  Issue submitting your request..retrying
+                  {order.sync_attempts && order.sync_attempts > 0 && (
+                    <span className="ml-1 text-sm opacity-75">
+                      (Retry {order.sync_attempts} of 3)
+                    </span>
+                  )}
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+          
+          {order.sync_status === 'photo_upload_failed' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Alert className="border-amber-500/50 bg-amber-500/10">
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                <AlertDescription className="text-amber-700 dark:text-amber-400">
+                  Photo upload failed. Retrying...
+                  {order.sync_attempts && order.sync_attempts > 0 && (
+                    <span className="ml-1 text-sm opacity-75">
+                      (Retry {order.sync_attempts} of 3)
+                    </span>
+                  )}
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+          
           {order.sync_status === 'requires_manual_review' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
+                <XCircle className="h-4 w-4" />
                 <AlertDescription>
-                  There was an issue syncing this order with our system. Our team has been notified and will resolve it shortly.
+                  Please contact support.
+                  {order.last_sync_error && (
+                    <span className="block mt-1 text-sm opacity-90">
+                      Error: {order.last_sync_error.length > 100 
+                        ? `${order.last_sync_error.substring(0, 100)}...` 
+                        : order.last_sync_error}
+                    </span>
+                  )}
                 </AlertDescription>
               </Alert>
             </motion.div>
