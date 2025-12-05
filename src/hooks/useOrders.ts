@@ -45,6 +45,9 @@ export interface Order {
   sync_attempts: number | null;
   last_sync_error: string | null;
   last_sync_at: string | null;
+  cancellation_reason: string | null;
+  acculynx_milestone: string | null;
+  milestone_updated_at: string | null;
   order_photos?: OrderPhoto[];
 }
 

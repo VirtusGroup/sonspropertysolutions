@@ -151,8 +151,10 @@ export type Database = {
         Row: {
           acculynx_contact_id: string | null
           acculynx_job_id: string | null
+          acculynx_milestone: string | null
           address_id: string | null
           address_snapshot: Json | null
+          cancellation_reason: string | null
           completed_at: string | null
           contact_email: string
           contact_first_name: string
@@ -165,6 +167,7 @@ export type Database = {
           job_ref: string
           last_sync_at: string | null
           last_sync_error: string | null
+          milestone_updated_at: string | null
           notes: string | null
           preferred_window: string | null
           property_type: string
@@ -180,8 +183,10 @@ export type Database = {
         Insert: {
           acculynx_contact_id?: string | null
           acculynx_job_id?: string | null
+          acculynx_milestone?: string | null
           address_id?: string | null
           address_snapshot?: Json | null
+          cancellation_reason?: string | null
           completed_at?: string | null
           contact_email: string
           contact_first_name: string
@@ -194,6 +199,7 @@ export type Database = {
           job_ref?: string
           last_sync_at?: string | null
           last_sync_error?: string | null
+          milestone_updated_at?: string | null
           notes?: string | null
           preferred_window?: string | null
           property_type: string
@@ -209,8 +215,10 @@ export type Database = {
         Update: {
           acculynx_contact_id?: string | null
           acculynx_job_id?: string | null
+          acculynx_milestone?: string | null
           address_id?: string | null
           address_snapshot?: Json | null
+          cancellation_reason?: string | null
           completed_at?: string | null
           contact_email?: string
           contact_first_name?: string
@@ -223,6 +231,7 @@ export type Database = {
           job_ref?: string
           last_sync_at?: string | null
           last_sync_error?: string | null
+          milestone_updated_at?: string | null
           notes?: string | null
           preferred_window?: string | null
           property_type?: string
