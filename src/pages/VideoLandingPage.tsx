@@ -372,15 +372,6 @@ function Scene5BookingMontage() {
               </div>
             </div>
 
-            {/* Animated checkmark */}
-            <motion.div
-              className="absolute top-4 right-4"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.5, type: 'spring' }}
-            >
-              <Check className="w-6 h-6 text-success" />
-            </motion.div>
           </motion.div>
         </AnimatePresence>
 
