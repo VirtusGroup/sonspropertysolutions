@@ -220,30 +220,17 @@ export default function OrderDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="relative h-28 px-4">
-                  {/* SVG line connecting all circles */}
-                  <svg 
-                    className="absolute inset-0 pointer-events-none"
-                    viewBox="0 0 100 10"
-                    preserveAspectRatio="none"
-                    style={{ top: '50%', transform: 'translateY(-50%)', height: '10px' }}
+                  {/* CSS-based connecting line */}
+                  <div 
+                    className="absolute left-8 right-8 h-0.5 bg-muted pointer-events-none"
+                    style={{ top: '50%', transform: 'translateY(-50%)' }}
                   >
-                    {/* Background line (full length) */}
-                    <line 
-                      x1="10" y1="5" 
-                      x2="90" y2="5" 
-                      stroke="hsl(var(--muted))"
-                      strokeWidth="2"
+                    {/* Progress line overlay */}
+                    <div 
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{ width: currentStepIndex > 0 ? `${(currentStepIndex / (statusSteps.length - 1)) * 100}%` : '0%' }}
                     />
-                    {/* Progress line (up to current step) */}
-                    {currentStepIndex > 0 && (
-                      <line 
-                        x1="10" y1="5" 
-                        x2={10 + (currentStepIndex * 20)} y2="5" 
-                        stroke="hsl(var(--primary))"
-                        strokeWidth="2"
-                      />
-                    )}
-                  </svg>
+                  </div>
                   
                   {/* Circles and labels layer */}
                   <div className="relative flex justify-between items-center h-full">
