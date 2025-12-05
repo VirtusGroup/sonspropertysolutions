@@ -9,6 +9,7 @@ import {
 import sonsLogo from '@/assets/sons-logo.png';
 import roofRepairImg from '@/assets/roof-repair.jpg';
 import roofInspectionImg from '@/assets/roof-inspection.jpg';
+import gutterCleaningImg from '@/assets/gutter-cleaning.jpg';
 
 const SCENE_DURATIONS = [4000, 4000, 4000, 3000, 7000, 3000, 3000, 0]; // Last scene stays
 const TOTAL_DURATION = SCENE_DURATIONS.slice(0, -1).reduce((a, b) => a + b, 0);
@@ -178,9 +179,9 @@ function Scene2HomeScreen() {
 // Scene 3: Services Selection
 function Scene3Services() {
   const services = [
-    { title: 'Small Roof Repair', highlight: true },
-    { title: 'Roof Inspection' },
-    { title: 'Gutter Cleaning' },
+    { title: 'Small Roof Repair', image: roofRepairImg, highlight: true },
+    { title: 'Roof Inspection', image: roofInspectionImg },
+    { title: 'Gutter Cleaning', image: gutterCleaningImg },
   ];
 
   return (
@@ -217,7 +218,7 @@ function Scene3Services() {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-lg bg-secondary overflow-hidden">
                   <img 
-                    src={i === 0 ? roofRepairImg : roofInspectionImg} 
+                    src={service.image} 
                     alt="" 
                     className="w-full h-full object-cover"
                   />
