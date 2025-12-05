@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.retry-failed-syncs]
 verify_jwt = false
+
+[functions.acculynx-webhook]
+verify_jwt = false
