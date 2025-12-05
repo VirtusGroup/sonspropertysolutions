@@ -42,7 +42,7 @@ serve(async (req) => {
           type: 'Mobile'
         }
       ],
-      Addresses: [
+      emailAddresses: [
         {
           address: email
         }
@@ -51,11 +51,12 @@ serve(async (req) => {
 
     // Add mailing address if provided
     if (address) {
-      contactPayload.mailingAddress = {
-        street: address.street,
+    contactPayload.mailingAddress = {
+        street1: address.street,
         city: address.city,
-        "mailing.Address.state": address.state,
-        zip: address.zip
+        state: { id: 43 },      // Texas (business only operates in TX)
+        zipcode: address.zip,
+        country: { id: 1 }      // US
       };
     }
 

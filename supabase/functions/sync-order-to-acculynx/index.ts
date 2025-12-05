@@ -37,7 +37,7 @@ async function createAccuLynxContact(
     lastName,
     contactTypeIds: [ACCULYNX_CONTACT_TYPE_ID],
     phoneNumbers: phone ? [{ number: phone, type: 'Mobile' }] : [],
-    emailAddresses: email ? [{ address: email, type: 'Personal' }] : []
+    emailAddresses: email ? [{ address: email }] : []
   };
 
   try {
