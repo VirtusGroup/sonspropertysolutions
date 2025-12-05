@@ -21,7 +21,8 @@ import {
   X,
   AlertTriangle,
   Clock,
-  XCircle
+  XCircle,
+  CheckCircle2
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useOrder } from '@/hooks/useOrders';
@@ -207,8 +208,47 @@ export default function OrderDetailPage() {
               </Alert>
             </motion.div>
           )}
+
+          {/* Cancelled Order Alert */}
+          {order.status === 'cancelled' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Alert variant="destructive">
+                <XCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <span className="font-medium">This order has been cancelled.</span>
+                  <span className="block mt-1 text-sm">
+                    Please contact support if you have any questions.
+                  </span>
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+
+          {/* Invoice Sent Alert - only for finished status */}
+          {order.status === 'finished' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Alert className="border-green-500/50 bg-green-500/10">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-700 dark:text-green-400">
+                  <span className="font-medium">Your invoice has been sent to your email.</span>
+                  {order.completed_at && (
+                    <span className="block mt-1 text-sm">
+                      Job completed on {format(new Date(order.completed_at), 'MMMM d, yyyy')}
+                    </span>
+                  )}
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
           
-          {/* Horizontal Timeline */}
+          {/* Horizontal Timeline - hidden for cancelled orders */}
+          {order.status !== 'cancelled' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -269,6 +309,7 @@ export default function OrderDetailPage() {
               </CardContent>
             </Card>
           </motion.div>
+          )}
 
           {/* Service Details */}
           <motion.div
