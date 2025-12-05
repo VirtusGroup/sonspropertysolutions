@@ -220,38 +220,29 @@ export default function OrderDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="relative h-28 px-4">
-                  {/* SVG curves layer */}
+                  {/* SVG line connecting all circles */}
                   <svg 
-                    className="absolute inset-0 w-full h-full pointer-events-none" 
+                    className="absolute inset-0 pointer-events-none"
+                    viewBox="0 0 100 10"
                     preserveAspectRatio="none"
-                    style={{ overflow: 'visible' }}
+                    style={{ top: '50%', transform: 'translateY(-50%)', height: '10px' }}
                   >
-                    {statusSteps.map((_, index) => {
-                      if (index === 0) return null;
-                      const isCompletedLine = index <= currentStepIndex;
-                      
-                      // Calculate positions (circles are at 10%, 30%, 50%, 70%, 90% horizontally)
-                      const prevX = ((index - 1) * 20 + 10);
-                      const currX = (index * 20 + 10);
-                      const midX = (prevX + currX) / 2;
-                      
-                      // Center Y is at 50% of container height
-                      const centerY = 50;
-                      // Curve amplitude - alternates direction
-                      const curveDown = index % 2 === 1;
-                      const controlY = curveDown ? centerY + 20 : centerY - 20;
-                      
-                      return (
-                        <path
-                          key={`curve-${index}`}
-                          d={`M ${prevX}% ${centerY}% Q ${midX}% ${controlY}% ${currX}% ${centerY}%`}
-                          className={isCompletedLine ? 'stroke-primary' : 'stroke-muted'}
-                          fill="none"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                        />
-                      );
-                    })}
+                    {/* Background line (full length) */}
+                    <line 
+                      x1="10" y1="5" 
+                      x2="90" y2="5" 
+                      stroke="hsl(var(--muted))"
+                      strokeWidth="2"
+                    />
+                    {/* Progress line (up to current step) */}
+                    {currentStepIndex > 0 && (
+                      <line 
+                        x1="10" y1="5" 
+                        x2={10 + (currentStepIndex * 20)} y2="5" 
+                        stroke="hsl(var(--primary))"
+                        strokeWidth="2"
+                      />
+                    )}
                   </svg>
                   
                   {/* Circles and labels layer */}
